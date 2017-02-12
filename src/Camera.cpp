@@ -26,12 +26,12 @@ Camera::Camera () {
   aspectRatio = 1.0;
   nearPlane = 0.1;
   farPlane = 10000.0;
-  
+
   spinning = 0;
   moving = 0;
   beginu = 0;
   beginv = 0;
-  
+
   trackball (curquat, 0.0, 0.0, 0.0, 0.0);
   x = y = z = 0.0;
   _zoom = 3.0;
@@ -78,7 +78,7 @@ void Camera::initPos () {
     y = _y;
     z = _z;;
     _zoom = __zoom;
-  } 
+  }
 }
 
 
@@ -90,7 +90,7 @@ void Camera::move (float dx, float dy, float dz) {
 
 
 void Camera::beginRotate (int u, int v) {
-  beginu = u; 
+  beginu = u;
   beginv = v;
   moving = 1;
   spinning = 0;
@@ -125,7 +125,7 @@ void Camera::zoom (float z) {
 void Camera::apply () {
   glLoadIdentity();
   glTranslatef (x, y, z);
-  GLfloat m[4][4]; 
+  GLfloat m[4][4];
   build_rotmatrix(m, curquat);
   glTranslatef (0.0, 0.0, -_zoom);
   glMultMatrixf(&m[0][0]);
@@ -133,7 +133,7 @@ void Camera::apply () {
 
 
 void Camera::getPos (float & X, float & Y, float & Z) {
-  GLfloat m[4][4]; 
+  GLfloat m[4][4];
   build_rotmatrix(m, curquat);
   float _x = -x;
   float _y = -y;
@@ -143,4 +143,3 @@ void Camera::getPos (float & X, float & Y, float & Z) {
   Z = m[2][0] * _x +  m[2][1] * _y +  m[2][2] * _z;
 
 }
-
