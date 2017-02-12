@@ -26,6 +26,7 @@
 #include "src/Vec3.h"
 #include "src/Camera.h"
 #include "src/Scene.h"
+#include "src/SelTool.h"
 
 using namespace std;
 
@@ -48,21 +49,21 @@ static bool fullScreen = false;
 Scene scene;
 
 void printUsage () {
-    cerr << endl 
+    cerr << endl
          << "gMini: a minimal OpenGL/GLUT application" << endl
-         << "for 3D graphics." << endl 
+         << "for 3D graphics." << endl
          << "Author : Tamy Boubekeur (http://www.labri.fr/~boubek)" << endl << endl
          << "Usage : ./gmini [<file.off>]" << endl
-         << "Keyboard commands" << endl 
+         << "Keyboard commands" << endl
          << "------------------" << endl
-         << " ?: Print help" << endl 
-         << " w: Toggle Wireframe Mode" << endl 
-         << " g: Toggle Gouraud Shading Mode" << endl 
-         << " f: Toggle full screen mode" << endl 
-         << " <drag>+<left button>: rotate model" << endl 
+         << " ?: Print help" << endl
+         << " w: Toggle Wireframe Mode" << endl
+         << " g: Toggle Gouraud Shading Mode" << endl
+         << " f: Toggle full screen mode" << endl
+         << " <drag>+<left button>: rotate model" << endl
          << " <drag>+<right button>: move model" << endl
          << " <drag>+<middle button>: zoom" << endl
-         << " q, <esc>: Quit" << endl << endl; 
+         << " q, <esc>: Quit" << endl << endl;
 }
 
 void usage () {
@@ -79,7 +80,7 @@ void initLight () {
     GLfloat direction1[3] = {-52.0f,-16.0f,-50.0f};
     GLfloat color1[4] = {0.5f, 1.0f, 0.5f, 1.0f};
     GLfloat ambient[4] = {0.3f, 0.3f, 0.3f, 0.5f};
-  
+
     glLightfv (GL_LIGHT1, GL_POSITION, light_position1);
     glLightfv (GL_LIGHT1, GL_SPOT_DIRECTION, direction1);
     glLightfv (GL_LIGHT1, GL_DIFFUSE, color1);
@@ -97,21 +98,22 @@ void init () {
     glDepthFunc (GL_LESS);
     glEnable (GL_DEPTH_TEST);
     glClearColor (0.2f, 0.2f, 0.3f, 1.0f);
+
 }
 
 
 // ------------------------------------
-// Replace the code of this 
-// functions for cleaning memory, 
+// Replace the code of this
+// functions for cleaning memory,
 // closing sockets, etc.
 // ------------------------------------
 
 void clear () {
-  
+
 }
 
 // ------------------------------------
-// Replace the code of this 
+// Replace the code of this
 // functions for alternative rendering.
 // ------------------------------------
 
@@ -153,7 +155,7 @@ void key (unsigned char keyPressed, int x, int y) {
         } else {
             glutFullScreen ();
             fullScreen = true;
-        }      
+        }
         break;
     case 'q':
     case 27:
@@ -200,6 +202,7 @@ void mouse (int button, int state, int x, int y) {
             }
         }
     }
+    onMouseClick(button,state,x,y);
     idle ();
 }
 
@@ -233,7 +236,7 @@ int main (int argc, char ** argv) {
     glutInitDisplayMode (GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
     glutInitWindowSize (SCREENWIDTH, SCREENHEIGHT);
     window = glutCreateWindow ("gMini");
-  
+
     init ();
     glutIdleFunc (idle);
     glutDisplayFunc (display);
@@ -241,11 +244,11 @@ int main (int argc, char ** argv) {
     glutReshapeFunc (reshape);
     glutMotionFunc (motion);
     glutMouseFunc (mouse);
-    key ('?', 0, 0);   
+
+    key ('?', 0, 0);
 
     scene.addMesh (argc == 2 ? argv[1] : "models/monkey.off");
 
     glutMainLoop ();
     return EXIT_SUCCESS;
 }
-
