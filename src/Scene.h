@@ -21,6 +21,7 @@ public:
         meshAjoute.loadOFF (modelFilename);
         meshAjoute.centerAndScaleToUnit ();
         meshAjoute.recomputeNormals ();
+        meshAjoute.buildArray ();
     }
 
     void draw() const {

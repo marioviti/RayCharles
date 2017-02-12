@@ -55,21 +55,35 @@ public:
     std::vector<MeshVertex> V;
     std::vector<MeshTriangle> T;
 
+    // initialize vetctors to bind with graphic card buffers.
+    std::vector<unsigned int> triangles;
+    std::vector<Vec3> vertices;
+    std::vector<Vec3> normals;
+
     void loadOFF (const std::string & filename);
     void recomputeNormals ();
     void centerAndScaleToUnit ();
     void scaleUnit ();
 
+    void buildArray() {
+  		for (unsigned int i = 0; i < T.size(); i++) {
+  			triangles.push_back(T[i].v[0]);
+  			triangles.push_back(T[i].v[1]);
+  			triangles.push_back(T[i].v[2]);
+  		}
+  		for (unsigned int i = 0; i < V.size(); i++) {
+  			vertices.push_back(V[i].p);
+  			normals.push_back(V[i].n);
+  		}
+	  }
+
     void draw() const {
-        // This code is deprecated. We will how to use vertex arrays and vertex buffer objects instead. (Exercice 1)
-        glBegin (GL_TRIANGLES);
-        for (unsigned int i = 0; i < T.size (); i++)
-            for (unsigned int j = 0; j < 3; j++) {
-                const MeshVertex & v = V[T[i].v[j]];
-                glNormal3f (v.n[0], v.n[1], v.n[2]);
-                glVertex3f (v.p[0], v.p[1], v.p[2]);
-            }
-        glEnd ();
+      glEnableClientState(GL_VERTEX_ARRAY);
+      glEnableClientState(GL_NORMAL_ARRAY);
+
+      glVertexPointer(3, GL_FLOAT, 3*sizeof(float),(GLvoid*)(&vertices[0]));
+      glNormalPointer(GL_FLOAT, 3*sizeof(float),(GLvoid*)(&normals[0]));
+      glDrawElements(GL_TRIANGLES,triangles.size(),GL_UNSIGNED_INT,(GLvoid*)(&triangles[0]));
     }
 };
 
