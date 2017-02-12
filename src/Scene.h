@@ -29,6 +29,7 @@ public:
         for( unsigned int mIt = 0 ; mIt < meshes.size() ; ++mIt ) {
             Mesh const & mesh = meshes[mIt];
             mesh.draw();
+            mesh.drawCage();
 
             /*
             // copies affichees : (Exercice 3)
