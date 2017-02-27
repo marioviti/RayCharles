@@ -6,9 +6,9 @@
 // All rights reserved.
 // ----------------------------------------------
 
-// Add here all the values you need to describe the lights or the materials. 
+// Add here all the values you need to describe the lights or the materials.
 // At first used const values, eventually stored in structures.
-// Then, use uniform variables and set them from your CPU program using 
+// Then, use uniform variables and set them from your CPU program using
 // the GLProgram methods.
 
 const vec3 inputLightPosition = vec3 (5.0, 5.0, 5.0);
@@ -37,13 +37,24 @@ void main (void) {
     }
     vec3 directionToLight = normalize(lightPosition - position);
     vec3 reflectedRayDirection = normalize( - directionToLight + 2.0*dot(directionToLight , normal) * normal );
-    
+
     // ---------- Code to change -------------
-    vec4 color = C;
+    //vec4 color = C;
+    /*
+    // This may be usefullo to check movements and camera/model relative coords
+    float r = PModelview.x;
+    float g = PModelview.y;
+    float b = PModelview.z;
+    vec4 color = vec4 (r, g, b, 1.0); // notice blue on the z axis so it's never visible (must invert)
+    */
+    // Coutput = C frag ∗ (Clight ∗ Cambient)
+    // Coutput = C frag ∗ Clight * ( Cambient + Cdiffus max(0, n · l))
+    float theta;
+    vec4 color;
+
+    theta = max(0,dot(normal,directionToLight));
+    color = inputObjectAmbiantMaterial + inputObjectDiffuseMaterial*theta;
+    color *= inputLightMaterial * C;
     // ----------------------------------------
     gl_FragColor = color;
 }
- 
-
-
-
