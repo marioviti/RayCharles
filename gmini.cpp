@@ -14,6 +14,8 @@
 // purpose.
 // -------------------------------------------
 
+#include "src/GLProgram.h"
+#include "src/Exception.h"
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -23,6 +25,8 @@
 
 #include <algorithm>
 #include <GL/glut.h>
+
+
 #include "src/Vec3.h"
 #include "src/Camera.h"
 #include "src/Scene.h"
@@ -47,6 +51,8 @@ static unsigned int FPS = 0;
 static bool fullScreen = false;
 
 Scene scene;
+
+GLProgram *glProgram;
 
 void printUsage () {
     cerr << endl
@@ -91,6 +97,8 @@ void initLight () {
 }
 
 void init () {
+    glewExperimental = GL_TRUE;
+    glewInit();
     camera.resize (SCREENWIDTH, SCREENHEIGHT);
     initLight ();
     glCullFace (GL_BACK);
@@ -99,6 +107,13 @@ void init () {
     glEnable (GL_DEPTH_TEST);
     glClearColor (0.2f, 0.2f, 0.3f, 1.0f);
 
+    try {
+      glProgram = GLProgram::genVFProgram ("Simple GL Program","./src/shader.vert","./src/shader.frag");
+      glProgram -> use();
+    }
+    catch(Exception & e) {
+      cerr << e.msg() << endl;
+    }
 }
 
 
