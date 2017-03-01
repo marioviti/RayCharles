@@ -26,7 +26,6 @@
 #include <algorithm>
 #include <GL/glut.h>
 
-
 #include "src/Vec3.h"
 #include "src/Camera.h"
 #include "src/Scene.h"
@@ -50,9 +49,45 @@ static int lastX=0, lastY=0, lastZoom=0;
 static unsigned int FPS = 0;
 static bool fullScreen = false;
 
+// -------------------------------------------
+// Shaders Parametes.
+// -------------------------------------------
 Scene scene;
 
+static Vec3 inputLightPosition = Vec3(5.0, 5.0, 5.0);
+int lightIsInCamSpace = 1;
+float specular_intensity = 3.3;
 GLProgram *glProgram;
+char *gl_program_name = "Simple GL Program";
+char *vertex_shader_path = "./src/shader.vert";
+char *fragment_shader_path = "./src/specular_shader.frag";
+
+// -------------------------------------------
+// Texture Checkerboard
+// -------------------------------------------
+
+unsigned char *checkerBoardImage;
+unsigned int checkerBoardImageWidth = 256;
+unsigned int checkerBoardImageHeight = 256;
+GLuint checkerBoardImageTextudeIdx;
+GLuint colorTexture_binding_Index;
+
+
+void createCheckerBoardImage() {
+	unsigned char value;
+	checkerBoardImage = new unsigned char[ 4*checkerBoardImageWidth*checkerBoardImageHeight];
+	for (unsigned int i = 0; i < checkerBoardImageWidth; ++i)
+		for (unsigned int j = 0; j < checkerBoardImageHeight; ++j) {
+			value = 0;
+			if (((2*i)/checkerBoardImageWidth+(2*j)/checkerBoardImageHeight)%2){ value = 255; }
+			checkerBoardImage[4* (i*checkerBoardImageWidth+j)+0] = value;
+			checkerBoardImage[4* (i*checkerBoardImageWidth+j)+1] = value;
+			checkerBoardImage[4* (i*checkerBoardImageWidth+j)+2] = value;
+			checkerBoardImage[4* (i*checkerBoardImageWidth+j)+3] = value;
+		}
+}
+
+// -------------------------------------------
 
 void printUsage () {
     cerr << endl
@@ -76,8 +111,6 @@ void usage () {
     printUsage ();
     exit (EXIT_FAILURE);
 }
-
-
 
 // ------------------------------------
 
@@ -108,12 +141,28 @@ void init () {
     glClearColor (0.2f, 0.2f, 0.3f, 1.0f);
 
     try {
-      glProgram = GLProgram::genVFProgram ("Simple GL Program","./src/shader.vert","./src/shader.frag");
+      glProgram = GLProgram::genVFProgram (gl_program_name,vertex_shader_path,fragment_shader_path);
       glProgram -> use();
+      glProgram -> setUniform1i("lightIsInCamSpace", lightIsInCamSpace);
+      glProgram -> setUniform1f("specular_intensity", specular_intensity);
+      glProgram -> setUniform3f("inputLightPosition", inputLightPosition[0],inputLightPosition[1],inputLightPosition[2]);
+      glProgram -> stop();
     }
     catch(Exception & e) {
       cerr << e.msg() << endl;
     }
+    // bind the texture
+    createCheckerBoardImage();
+    glEnable(GL_TEXTURE_2D);
+    glGenTextures(1, &checkerBoardImageTextudeIdx);
+    glBindTexture(GL_TEXTURE_2D,checkerBoardImageTextudeIdx);
+    glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA, checkerBoardImageWidth,
+      checkerBoardImageHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE, checkerBoardImage);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glDisable(GL_TEXTURE_2D);
 }
 
 
@@ -133,7 +182,37 @@ void clear () {
 // ------------------------------------
 
 void draw () {
-    scene.draw();
+
+    try {
+      //glProgram -> use();
+      //glProgram -> setUniform1i("lightIsInCamSpace", lightIsInCamSpace);
+      //glProgram -> setUniform1f("specular_intensity", specular_intensity);
+      //glProgram -> setUniform3f("inputLightPosition", inputLightPosition[0],inputLightPosition[1],inputLightPosition[2]);
+
+      scene.draw();
+
+      //glProgram -> stop();
+
+      // Create one OpenGL texture
+      glEnable(GL_TEXTURE_2D);
+      glBindTexture(GL_TEXTURE_2D,checkerBoardImageTextudeIdx);
+      glDisable(GL_LIGHTING);
+      glColor3f(1,1,1);
+      glBegin(GL_QUADS);
+      {
+        glTexCoord2f(-10,10); glVertex3f(-10,-1,10);
+        glTexCoord2f(10,10); glVertex3f(10,-1,10);
+        glTexCoord2f(10,-10); glVertex3f(10,-1,-10);
+        glTexCoord2f(-10,-10); glVertex3f(-10,-1,-10);
+      }
+      glEnd();
+      glDisable(GL_TEXTURE_2D);
+      glEnable(GL_LIGHTING);
+
+    }
+    catch(Exception & e) {
+      cerr << e.msg() << endl;
+    }
 }
 
 void display () {

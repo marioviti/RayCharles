@@ -10,9 +10,10 @@
 class Scene {
     // Mettez ici tout ce que vous souhaitez avoir dans votre scene 3D.
     // Pour l'instant, on a uniquement des maillages, mais par la suite on pourra rajouter des objets specialises comme des spheres, des cylindres ou des cones par ex...
-    std::vector< Mesh > meshes;
+    //std::vector< Mesh > meshes;
 
 public:
+    std::vector< Mesh > meshes;
     Scene() {}
 
     void addMesh(std::string const & modelFilename) {

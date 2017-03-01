@@ -130,10 +130,12 @@ public:
 
     void drawCage() const {
 
+      glDisable(GL_LIGHTING);
+      glColor3f(0.3,0.3,1);
       glEnableClientState(GL_VERTEX_ARRAY);
       glVertexPointer(3, GL_FLOAT, 3*sizeof(float),(GLvoid*)(&cageVertices[0]));
       glDrawElements(GL_LINES,cageOrder.size(),GL_UNSIGNED_INT,(GLvoid*)(&cageOrder[0]));
-
+      glEnable(GL_LIGHTING);
     }
 };
 
