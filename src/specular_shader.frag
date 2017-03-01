@@ -30,7 +30,7 @@ void main (void) {
     vec4 PModelview = gl_ModelViewMatrix * P;
     vec3 position = vec3 (PModelview.xyz / PModelview.w);
     vec3 normal = normalize(gl_NormalMatrix * N);
-    vec3 directionToCamera = normalize(-position); // la camera est toujours a 0,0,0
+    vec3 directionToCamera = normalize(-position); // on est deja en espace camera
     vec3 lightPosition = inputLightPosition;
     if( lightIsInCamSpace != 1) {
         vec4 LModelview = gl_ModelViewMatrix * vec4(lightPosition.xyz,1.0);

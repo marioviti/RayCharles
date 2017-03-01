@@ -9,6 +9,8 @@
 // All rights reserved.
 // --------------------------------------------------------------------------
 #pragma once
+#ifndef GL_PROGRAM
+#define GL_PROGRAM
 
 #include <GL/glew.h>
 
@@ -67,3 +69,5 @@ private:
   std::string _name;
   std::vector<GLShader*>_shaders;
 };
+
+#endif

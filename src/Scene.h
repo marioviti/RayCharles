@@ -10,10 +10,10 @@
 class Scene {
     // Mettez ici tout ce que vous souhaitez avoir dans votre scene 3D.
     // Pour l'instant, on a uniquement des maillages, mais par la suite on pourra rajouter des objets specialises comme des spheres, des cylindres ou des cones par ex...
-    //std::vector< Mesh > meshes;
+    std::vector< Mesh > meshes;
+    std::vector< GLProgram* > gl_Programs;
 
 public:
-    std::vector< Mesh > meshes;
     Scene() {}
 
     void addMesh(std::string const & modelFilename) {
@@ -22,14 +22,20 @@ public:
         meshAjoute.loadOFF (modelFilename);
         meshAjoute.centerAndScaleToUnit ();
         meshAjoute.recomputeNormals ();
-        meshAjoute.buildArray ();
+        meshAjoute.buildArray();
+    }
+
+    void addGLProgram(GLProgram* _gl_Program) {
+      gl_Programs.push_back(_gl_Program);
     }
 
     void draw() const {
         // iterer sur l'ensemble des objets, et faire leur rendu.
         for( unsigned int mIt = 0 ; mIt < meshes.size() ; ++mIt ) {
             Mesh const & mesh = meshes[mIt];
+            gl_Programs[mIt]->use();
             mesh.draw();
+            gl_Programs[mIt]->stop();
             mesh.drawCage();
 
             /*

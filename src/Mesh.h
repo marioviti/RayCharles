@@ -6,6 +6,8 @@
 #include <string>
 #include "Vec3.h"
 
+#include "src/GLProgram.h"
+
 #include <GL/glut.h>
 
 
@@ -51,7 +53,9 @@ struct MeshTriangle {
 
 
 class Mesh {
+
 public:
+
 
     std::vector<MeshVertex> V;
     std::vector<MeshTriangle> T;
@@ -61,7 +65,7 @@ public:
     std::vector<Vec3> vertices;
     std::vector<Vec3> normals;
 
-    // vecotors holding the cage settings
+    // vectors holding the cage settings
     std::vector<unsigned int> cageOrder;
     std::vector<Vec3> cageVertices;
 
@@ -125,7 +129,6 @@ public:
       glVertexPointer(3, GL_FLOAT, 3*sizeof(float),(GLvoid*)(&vertices[0]));
       glNormalPointer(GL_FLOAT, 3*sizeof(float),(GLvoid*)(&normals[0]));
       glDrawElements(GL_TRIANGLES,triangles.size(),GL_UNSIGNED_INT,(GLvoid*)(&triangles[0]));
-
     }
 
     void drawCage() const {

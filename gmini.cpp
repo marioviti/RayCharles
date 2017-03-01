@@ -30,6 +30,8 @@
 #include "src/Camera.h"
 #include "src/Scene.h"
 #include "src/SelTool.h"
+#include "src/Ray.h"
+
 
 using namespace std;
 
@@ -182,37 +184,36 @@ void clear () {
 // ------------------------------------
 
 void draw () {
+	  Ray ray(Vec3(0.,0.,0.),Vec3(1.,0.,0.));
 
-    try {
-      //glProgram -> use();
-      //glProgram -> setUniform1i("lightIsInCamSpace", lightIsInCamSpace);
-      //glProgram -> setUniform1f("specular_intensity", specular_intensity);
-      //glProgram -> setUniform3f("inputLightPosition", inputLightPosition[0],inputLightPosition[1],inputLightPosition[2]);
+  	scene.draw();
 
-      scene.draw();
+		glDisable(GL_LIGHTING);
+		glBegin(GL_LINES);
+		glColor3f(1.,0.,0.);
+		Vec3 p1 = ray.origin();
+		Vec3 p2 = ray.origin()+1000*ray.direction();
+		glVertex3f(p1[0],p1[1],p1[2]);
+		glVertex3f(p2[0],p2[1],p2[2]);
+		glEnd ();
 
-      //glProgram -> stop();
 
-      // Create one OpenGL texture
-      glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D,checkerBoardImageTextudeIdx);
-      glDisable(GL_LIGHTING);
-      glColor3f(1,1,1);
-      glBegin(GL_QUADS);
-      {
-        glTexCoord2f(-10,10); glVertex3f(-10,-1,10);
-        glTexCoord2f(10,10); glVertex3f(10,-1,10);
-        glTexCoord2f(10,-10); glVertex3f(10,-1,-10);
-        glTexCoord2f(-10,-10); glVertex3f(-10,-1,-10);
-      }
-      glEnd();
-      glDisable(GL_TEXTURE_2D);
-      glEnable(GL_LIGHTING);
-
+    // Create one OpenGL texture
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D,checkerBoardImageTextudeIdx);
+    glDisable(GL_LIGHTING);
+    glColor3f(1,1,1);
+    glBegin(GL_QUADS);
+    {
+      glTexCoord2f(-10,10); glVertex3f(-10,-1,10);
+      glTexCoord2f(10,10); glVertex3f(10,-1,10);
+      glTexCoord2f(10,-10); glVertex3f(10,-1,-10);
+      glTexCoord2f(-10,-10); glVertex3f(-10,-1,-10);
     }
-    catch(Exception & e) {
-      cerr << e.msg() << endl;
-    }
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+    glEnable(GL_LIGHTING);
+
 }
 
 void display () {
@@ -342,7 +343,7 @@ int main (int argc, char ** argv) {
     key ('?', 0, 0);
 
     scene.addMesh (argc == 2 ? argv[1] : "models/monkey.off");
-
+    scene.addGLProgram(glProgram); //ADD ONE PER MESH!!!!!!
     glutMainLoop ();
     return EXIT_SUCCESS;
 }
