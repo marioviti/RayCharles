@@ -5,6 +5,8 @@
 #include <vector>
 #include <string>
 #include "Vec3.h"
+#include "Ray.h"
+#include "Triangle.h"
 
 #include "src/GLProgram.h"
 
@@ -46,11 +48,19 @@ struct MeshTriangle {
         return (*this);
     }
     // membres :
+
     unsigned int v[3];
 };
 
 
-
+struct RayMeshIntersection{
+  bool intersectionExists;
+  float lambda;
+  float u,v;
+  unsigned int tIndex;
+  Vec3 intersection;
+  Vec3 normal;
+};
 
 class Mesh {
 
@@ -85,6 +95,28 @@ public:
   		}
       build_cage();
 	  }
+
+    RayMeshIntersection getIntersection(Ray const & ray) {
+        RayMeshIntersection result;
+        RayTriangleIntersection rays_Triangle_intersection;
+        float gamma = 0;
+        for(unsigned int i = 0; i < T.size(); ++i) {
+          Triangle tri (V[ T[i].v[0] ].p, V[ T[i].v[1] ].p, V[ T[i].v[2] ].p);
+          rays_Triangle_intersection = tri.getIntersection(ray);
+          if(rays_Triangle_intersection.intersectionExists) {
+            if(gamma > rays_Triangle_intersection.lambda){
+              gamma = rays_Triangle_intersection.lambda;
+              result.intersectionExists = rays_Triangle_intersection.intersectionExists;
+              result.lambda = rays_Triangle_intersection.lambda;
+              result.u = rays_Triangle_intersection.u;
+              result.v = rays_Triangle_intersection.v;
+              result.intersection = rays_Triangle_intersection.intersection;
+              result.normal = rays_Triangle_intersection.normal;
+            }
+          }
+        }
+        return result;
+    }
 
     void build_cage() {
 

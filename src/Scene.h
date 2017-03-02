@@ -9,6 +9,12 @@
 
 #include <GL/glut.h>
 
+struct RaySceneIntersection {
+  bool intersectionExists;
+  Vec3 intersection;
+  Vec3 normal;
+};
+
 class Scene {
     // Mettez ici tout ce que vous souhaitez avoir dans votre scene 3D.
     // Pour l'instant, on a uniquement des maillages, mais par la suite on pourra rajouter des objets specialises comme des spheres, des cylindres ou des cones par ex...
@@ -21,10 +27,12 @@ private:
 public:
     Scene() {}
 
-    float rayTrace(Ray rayon, std::vector<Vec3> rays) {
-      for( unsigned int mIt = 0 ; mIt < meshes.size() ; ++mIt ) {
-
-      }
+    Vec3 rayTrace(Ray const & ray, std::vector<Vec3> rays) {
+       RaySceneIntersection result;
+       RayMeshIntersection rayMeshIntersection;
+       for( unsigned int mIt = 0 ; mIt < meshes.size() ; ++mIt ) {
+         rayMeshIntersection = meshes[mIt].getIntersection(ray);
+       }
     }
 
     void addSphere(float _ray, Vec3 _center) {

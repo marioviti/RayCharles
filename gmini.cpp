@@ -89,7 +89,7 @@ void rayTraceFromCamera() {
             float v = ((float)(y) + (float)(rand())/(float)(RAND_MAX)) / h;
             // this is a random uv that belongs to the pixel xy.
             screenSpaceToWorldSpaceRay(u,v,pos,dir);
-            //image[x + y*w] = scene.rayTrace( Ray(pos , dir) , rays_intersection );
+            image[x + y*w] = scene.rayTrace( Ray(pos , dir) , rays_intersection );
         }
     }
 
