@@ -56,7 +56,6 @@ class Mesh {
 
 public:
 
-
     std::vector<MeshVertex> V;
     std::vector<MeshTriangle> T;
 

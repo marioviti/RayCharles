@@ -1,16 +1,14 @@
 // --------------------------------------------------------------------------
 // Copyright(C) 2009-2016
 // Tamy Boubekeur
-//
-// Permission granted to use this code only for teaching projects and
+// 
+// Permission granted to use this code only for teaching projects and 
 // private practice.
 //
-// Do not distribute this code outside the teaching assignements.
-// All rights reserved.
+// Do not distribute this code outside the teaching assignements.                                                                           
+// All rights reserved.                                                       
 // --------------------------------------------------------------------------
 #pragma once
-#ifndef GL_PROGRAM
-#define GL_PROGRAM
 
 #include <GL/glew.h>
 
@@ -55,7 +53,7 @@ public:
   void setUniform1fv (const std::string & name, unsigned int nValues , const float * values);
   void setUniform1iv (GLint location, unsigned int nValues , const int * values);
   void setUniform1iv (const std::string & name, unsigned int nValues , const int * values);
-
+  
   // generate a simple program, with only vertex and fragment shaders.
   static GLProgram * genVFProgram (const std::string & name,
 				                         const std::string & vertexShaderFilename,
@@ -69,5 +67,3 @@ private:
   std::string _name;
   std::vector<GLShader*>_shaders;
 };
-
-#endif

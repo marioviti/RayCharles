@@ -8,7 +8,9 @@ struct RayTriangleIntersection{
   bool intersectionExists;
   float lambda;
   float u,v;
+  unsigned int tIndex;
   Vec3 intersection;
+  Vec3 normal;
 };
 
 class Triangle {
@@ -65,7 +67,7 @@ public:
     // 2) check that the triangle is "in front of" the ray:
     result.lambda = Vec3::dot( m_c[0] - ray.origin() , normal() ) / dotDirectionAndNormal;
     if(result.lambda < 0.f) {
-      // then the triangle is "behind" the ray:
+      // then the triangle is "behind" the ray: (independantly from the orientation of the triangle)
       result.intersectionExists = false;
       return result;
     }
@@ -74,13 +76,18 @@ public:
     // CONVENTION: compute u,v such that p = u*c0 + v*c1 + (1-u-v)*c2, check that 0 <= u,v <= 1
     float dummyFloat;
     computeBarycentricCoordinates( result.intersection , result.u , result.v , dummyFloat );
-    if( result.u < 0.f || result.u > 1.f || result.v < 0.f || result.v > 1.f ) {
+    float sumBarycentricCoordinates = result.u + result.v + dummyFloat;
+    result.u /= sumBarycentricCoordinates;
+    result.v /= sumBarycentricCoordinates;
+    dummyFloat /= sumBarycentricCoordinates;
+    if( result.u < 0.f || result.u > 1.f || result.v < 0.f || result.v > 1.f || dummyFloat < 0.f || dummyFloat > 1.f ) {
       // then the point is outside the triangle:
       result.intersectionExists = false;
       return result;
     }
     // 4) Finally, if all conditions were met, then there is an intersection! :
     result.intersectionExists = true;
+    result.normal = normal();
     return result;
   }
 };
