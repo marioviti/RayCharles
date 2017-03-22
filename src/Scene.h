@@ -11,6 +11,7 @@
 
 struct RaySceneIntersection {
   bool intersectionExists;
+  float lambda;
   Vec3 intersection;
   Vec3 normal;
 };
@@ -27,12 +28,37 @@ private:
 public:
     Scene() {}
 
-    Vec3 rayTrace(Ray const & ray, std::vector<Vec3> rays) {
-       RaySceneIntersection result;
-       RayMeshIntersection rayMeshIntersection;
-       for( unsigned int mIt = 0 ; mIt < meshes.size() ; ++mIt ) {
-         rayMeshIntersection = meshes[mIt].getIntersection(ray);
-       }
+    Vec3 rayTrace(Ray const & ray, std::vector<Vec3> rays_intersections, int depth) {
+      Vec3 color_value;
+      RaySceneIntersection result;
+      RayMeshIntersection rayMeshIntersection;
+      for(unsigned int mIt = 0 ; mIt < meshes.size() ; ++mIt ) {
+        rayMeshIntersection = meshes[mIt].getIntersection(ray);
+        if(rayMeshIntersection.intersectionExists && rayMeshIntersection.lambda<result.lambda) {
+          result.intersectionExists = true;
+          result.lambda = rayMeshIntersection.lambda;
+          result.intersection = rayMeshIntersection.intersection;
+          result.normal = rayMeshIntersection.normal;
+        }
+      }
+      // we could handle rebounds at another level, like a mesh level
+      // but suppose we do that, we may calculate all the rebounds for nothing.
+      // so we'll need to get information from the object material.
+
+      // push back the latest ray intersection
+      if(result.intersectionExists) {
+        rays_intersections.push_back(result.intersection);
+        // do not reflect
+        if (depth == 0) { return color_value; }
+        // do reflect
+        if (result.intersectionExists) {
+          // calculate reflected ray
+          Vec3 reflected_direction = -1*ray.direction() + (2*Vec3::dot(ray.direction(),(result.normal)))*result.normal;
+          Ray reflected_ray(result.intersection,reflected_direction);
+          color_value = rayTrace(reflected_ray,rays_intersections,depth-1);
+        }
+      }
+      return color_value;
     }
 
     void addSphere(float _ray, Vec3 _center) {
