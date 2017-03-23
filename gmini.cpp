@@ -58,7 +58,7 @@ static bool fullScreen = false;
 // -------------------------------------------
 Scene scene;
 
-static Vec3 inputLightPosition = Vec3(5.0, 5.0, 5.0);
+static Vec3 inputLightPosition = Vec3(1.0, 5.0, 5.0);
 int lightIsInCamSpace = 1;
 float specular_intensity = 3.3;
 GLProgram *glProgram;
@@ -89,7 +89,7 @@ void rayTraceFromCamera() {
             float v = ((float)(y) + (float)(rand())/(float)(RAND_MAX)) / h;
             // this is a random uv that belongs to the pixel xy.
             screenSpaceToWorldSpaceRay(u,v,pos,dir);
-            image[x + y*w] = scene.rayTrace( Ray(pos , dir) , rays_intersection ,0);
+            image[x + y*w] = scene.rayTrace( Ray(pos, dir), rays_intersection);
         }
     }
 
@@ -244,31 +244,26 @@ void drawRay(Vec3 p1, Vec3 p2) {
   glVertex3f(p1[0],p1[1],p1[2]);
   glVertex3f(p2[0],p2[1],p2[2]);
   glEnd ();
+  glColor3f(1.,1.,1.);
+  glEnable(GL_LIGHTING);
 }
 
 
-
 void draw () {
+    glEnable(GL_LIGHTING);
 	  Ray ray(Vec3(-1.0,0.,0.),Vec3(1.,0.,0.));
-    std::vector<Vec3> rays_intersection;
-  	scene.draw();
-    //drawRay(ray,1.1);
-    scene.rayTrace(ray,rays_intersection,0);
-    if (rays_intersection.size()>0) {
-      drawRay(ray.origin(),rays_intersection[0]);
+    std::vector<Vec3> rays_intersections;
+
+    scene.rayTrace(ray,rays_intersections,0);
+    if (rays_intersections.size()>0) {
+      drawRay(ray.origin(),rays_intersections[0]);
     }
+
+  	scene.draw();
+
+    glDisable(GL_LIGHTING);
+
     /*
-		glDisable(GL_LIGHTING);
-		glBegin(GL_LINES);
-		glColor3f(1.,0.,0.);
-		Vec3 p1 = ray.origin();
-		Vec3 p2 = ray.origin()+1000*ray.direction();
-		glVertex3f(p1[0],p1[1],p1[2]);
-		glVertex3f(p2[0],p2[1],p2[2]);
-		glEnd ();
-    */
-
-
     // Create one OpenGL texture
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D,checkerBoardImageTextudeIdx);
@@ -283,7 +278,11 @@ void draw () {
     }
     glEnd();
     glDisable(GL_TEXTURE_2D);
-    glEnable(GL_LIGHTING);
+    */
+
+
+    //drawRay(ray,1.1);
+
 
 }
 
@@ -392,7 +391,6 @@ void reshape(int w, int h) {
     camera.resize (w, h);
 }
 
-
 int main (int argc, char ** argv) {
     if (argc > 2) {
         printUsage ();
@@ -410,12 +408,12 @@ int main (int argc, char ** argv) {
     glutReshapeFunc (reshape);
     glutMotionFunc (motion);
     glutMouseFunc (mouse);
-
     key ('?', 0, 0);
-
-    scene.addMesh (argc == 2 ? argv[1] : "models/monkey.off");
+    //scene.addMesh (argc == 2 ? argv[1] : "models/monkey.off");
     scene.addGLProgram(glProgram); //ADD ONE PER MESH!!!!!!
-		scene.addSphere(0.3,Vec3(0,1,0));
+		scene.addSphere(0.4,Vec3(0,0,0));
+    scene.addSphere(0.5,Vec3(1,1,0));
+    scene.addQuad(Vec3(-10,-1,-10),Vec3(10,-1,-10),Vec3(-10,-1,10),Vec3(10,-1.0,10));
     glutMainLoop ();
     return EXIT_SUCCESS;
 }

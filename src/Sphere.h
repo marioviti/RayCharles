@@ -4,12 +4,21 @@
 #define PI 3.1415926535
 #include <cmath>
 
+struct RaySphereIntersection{
+  bool intersectionExists;
+  float lambda;
+  float u,v;
+  unsigned int tIndex;
+  Vec3 intersection;
+  Vec3 normal;
+};
+
 class Sphere:public Mesh {
 public:
-    float ray;
-    Vec3 center;
-    Sphere():center(0.0,0.0,0.0), ray(1) {}
-    Sphere(float _ray, Vec3 _center) { ray = _ray; center = _center; }
+    float sphere_ray;
+    Vec3 centre;
+    Sphere():centre(0.0,0.0,0.0), sphere_ray(1) {}
+    Sphere(float _sphere_ray, Vec3 _centre) { sphere_ray = _sphere_ray; centre = _centre; }
 
     void buildMesh(int N, int M) {
       V.resize(N*M);
@@ -26,7 +35,7 @@ public:
           y = std::cos(phi)*std::sin(theta);
           z = std::sin(phi);
           n = Vec3 (x,y,z);
-          p = center + (ray*n);
+          p = centre + (sphere_ray*n);
           V[i+j*N].p = p;
           V[i+j*N].n = n;
         }
@@ -44,6 +53,32 @@ public:
       }
       buildArray();
     }
+
+    RaySphereIntersection getIntersection( Ray const & ray ) const {
+      RaySphereIntersection res;
+      float delta;
+      delta = pow(2*Vec3::dot((ray.origin()-centre),ray.direction()),2)-4*(pow((ray.origin()-centre).length(),2)-pow(sphere_ray,2));
+
+      if (delta > 0) {
+           float eps_Min = (-2*Vec3::dot((ray.origin()-centre),ray.direction())-sqrt(delta))/2;
+           float eps_Max = (-2*Vec3::dot((ray.origin()-centre),ray.direction())+sqrt(delta))/2;
+           if (eps_Min >= 0) {
+                res.intersectionExists = true,
+                res.lambda =eps_Min;
+                res.intersection = ray.origin() + eps_Min*ray.direction();
+                res.normal = (centre-res.intersection);
+                res.normal.normalize();
+           }
+           else if (eps_Max >=0){
+                res.intersectionExists = true,
+                res.lambda =eps_Max;
+                res.intersection = ray.origin() + eps_Max*ray.direction();
+                res.normal = (centre-res.intersection);
+                res.normal.normalize();
+           }
+      }
+      return res;
+   }
 };
 
 #endif

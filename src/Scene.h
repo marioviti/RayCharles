@@ -1,5 +1,6 @@
 #ifndef SCENE_H
 #define SCENE_H
+#define MAX_LAMBDA 100
 
 #include <vector>
 #include <string>
@@ -23,28 +24,53 @@ class Scene {
 private:
     std::vector< Mesh > meshes;
     std::vector< Sphere > spheres;
+    std::vector< Sphere > lights;
+
     GLProgram* gl_Program;
 
 public:
     Scene() {}
 
-    Vec3 rayTrace(Ray const & ray, std::vector<Vec3> rays_intersections, int depth) {
+    Vec3 rayTrace(Ray const & ray, std::vector<Vec3>& rays_intersections, int depth) {
       Vec3 color_value;
       RaySceneIntersection result;
       RayMeshIntersection rayMeshIntersection;
+      RaySphereIntersection raySphereIntersection;
+
+      // check Meshes intersection
+      // initialize to a max depth value
+      result.lambda = MAX_LAMBDA;
       for(unsigned int mIt = 0 ; mIt < meshes.size() ; ++mIt ) {
         rayMeshIntersection = meshes[mIt].getIntersection(ray);
-        if(rayMeshIntersection.intersectionExists && rayMeshIntersection.lambda<result.lambda) {
-          result.intersectionExists = true;
-          result.lambda = rayMeshIntersection.lambda;
-          result.intersection = rayMeshIntersection.intersection;
-          result.normal = rayMeshIntersection.normal;
+        if(rayMeshIntersection.intersectionExists)
+          // check if positive aka in front and near then previous interesced objects
+          if (rayMeshIntersection.lambda>0 && rayMeshIntersection.lambda<result.lambda) {
+            result.intersectionExists = true;
+            result.lambda = rayMeshIntersection.lambda;
+            result.intersection = rayMeshIntersection.intersection;
+            result.normal = rayMeshIntersection.normal;
+          }
         }
-      }
+
+      // check Spheres intersection
+      for(unsigned int mIt = 0 ; mIt < spheres.size() ; ++mIt ) {
+        raySphereIntersection = spheres[mIt].getIntersection(ray);
+        if(raySphereIntersection.intersectionExists)
+          // check if positive aka in front and near then previous interesced objects
+          if (raySphereIntersection.lambda>0 && raySphereIntersection.lambda<result.lambda) {
+            result.intersectionExists = true;
+            result.lambda = raySphereIntersection.lambda;
+            result.intersection = raySphereIntersection.intersection;
+            result.normal = raySphereIntersection.normal;
+          }
+        }
+        if(result.intersectionExists) {
+          rays_intersections.push_back(result.intersection);
+        }
       // we could handle rebounds at another level, like a mesh level
       // but suppose we do that, we may calculate all the rebounds for nothing.
       // so we'll need to get information from the object material.
-
+      /*
       // push back the latest ray intersection
       if(result.intersectionExists) {
         rays_intersections.push_back(result.intersection);
@@ -58,6 +84,7 @@ public:
           color_value = rayTrace(reflected_ray,rays_intersections,depth-1);
         }
       }
+      */
       return color_value;
     }
 
@@ -65,6 +92,15 @@ public:
       Sphere sphere = Sphere(_ray,_center);
       sphere.buildMesh(10,10);
       spheres.push_back(sphere);
+    }
+
+    void addQuad(Vec3 c1, Vec3 c2, Vec3 c3, Vec3 c4) {
+      meshes.resize( meshes.size() + 1 );
+      Mesh & meshAjoute = meshes[ meshes.size() - 1 ];
+      meshAjoute.setQuads(c1,c2,c3,c4);
+      //meshAjoute.centerAndScaleToUnit ();
+      meshAjoute.recomputeNormals ();
+      meshAjoute.buildArray();
     }
 
     void addMesh(std::string const & modelFilename) {

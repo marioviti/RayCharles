@@ -6,17 +6,17 @@
 // All rights reserved.
 // ----------------------------------------------
 
-// Add here all the values you need to describe the lights or the materials. 
+// Add here all the values you need to describe the lights or the materials.
 // At first used const values, eventually stored in structures.
-// Then, use uniform variables and set them from your CPU program using 
+// Then, use uniform variables and set them from your CPU program using
 // the GLProgram methods.
 
 const vec3 inputLightPosition = vec3 (5.0, 5.0, 5.0);
 const vec4 inputLightMaterial = vec4 (1.0, 1.0, 1.0 , 1.0); // white light
 const bool lightIsInCamSpace = true;
 
-const vec4 inputObjectAmbiantMaterial = vec4 (0.1, 0.2, 0.1 , 1.0); // green-ish
-const vec4 inputObjectDiffuseMaterial = vec4 (0.3, 0.3, 0.4 , 1.0); // blue-ish
+const vec4 inputObjectAmbiantMaterial = vec4 (1.1, 0.2, 1.1 , 1.0); // green-ish
+const vec4 inputObjectDiffuseMaterial = vec4 (1.3, 1.3, 1.4 , 1.0); // blue-ish
 const vec4 inputObjectSpecularMaterial = vec4 (1.0, 1.0, 1.0 , 1.0); // white
 const float inputObjectShininess = 50.0;
 
@@ -37,13 +37,9 @@ void main (void) {
     }
     vec3 directionToLight = normalize(lightPosition - position);
     vec3 reflectedRayDirection = normalize( - directionToLight + 2.0*dot(directionToLight , normal) * normal );
-    
+
     // ---------- Code to change -------------
     vec4 color = C;
     // ----------------------------------------
     gl_FragColor = color;
 }
- 
-
-
-

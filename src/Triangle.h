@@ -66,6 +66,7 @@ public:
     }
     // 2) check that the triangle is "in front of" the ray:
     result.lambda = Vec3::dot( m_c[0] - ray.origin() , normal() ) / dotDirectionAndNormal;
+    
     if(result.lambda < 0.f) {
       // then the triangle is "behind" the ray: (independantly from the orientation of the triangle)
       result.intersectionExists = false;

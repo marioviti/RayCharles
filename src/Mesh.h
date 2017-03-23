@@ -78,6 +78,7 @@ public:
     std::vector<unsigned int> cageOrder;
     std::vector<Vec3> cageVertices;
 
+    void setQuads(Vec3 c1, Vec3 c2, Vec3 c3, Vec3 c4);
     void loadOFF (const std::string & filename);
     void recomputeNormals ();
     void centerAndScaleToUnit ();
@@ -99,13 +100,11 @@ public:
     RayMeshIntersection getIntersection(Ray const & ray) {
         RayMeshIntersection result;
         RayTriangleIntersection rays_Triangle_intersection;
-        float gamma = 0;
         for(unsigned int i = 0; i < T.size(); ++i) {
           Triangle tri (V[ T[i].v[0] ].p, V[ T[i].v[1] ].p, V[ T[i].v[2] ].p);
           rays_Triangle_intersection = tri.getIntersection(ray);
           if(rays_Triangle_intersection.intersectionExists) {
-            if(gamma > rays_Triangle_intersection.lambda){
-              gamma = rays_Triangle_intersection.lambda;
+            if(result.lambda < rays_Triangle_intersection.lambda){
               result.intersectionExists = rays_Triangle_intersection.intersectionExists;
               result.lambda = rays_Triangle_intersection.lambda;
               result.u = rays_Triangle_intersection.u;
