@@ -34,9 +34,7 @@
 
 #include "src/matrixUtilities.h"
 
-
 using namespace std;
-
 
 // -------------------------------------------
 // OpenGL/GLUT application code.
@@ -77,6 +75,8 @@ GLuint checkerBoardImageTextudeIdx;
 GLuint colorTexture_binding_Index;
 std::vector<Vec3> rays_intersection;
 
+/*
+
 void rayTraceFromCamera() {
     int w = glutGet(GLUT_WINDOW_WIDTH)  ,   h = glutGet(GLUT_WINDOW_HEIGHT);
     std::cout << "Ray tracing a " << w << " x " << h << " image" << std::endl;
@@ -101,11 +101,12 @@ void rayTraceFromCamera() {
     }
     f << "P3" << std::endl << w << " " << h << std::endl << 255 << std::endl;
     for (int i=0; i<w*h; i++)
-        f << (unsigned char)(255.f*image[i][0]) << " " << (unsigned char)(255.f*image[i][1]) << " " << (unsigned char)(255.f*image[i][2]) << " ";
+        f << (int)(255.f*image[i][0]) << " " << (unsigned char)(255.f*image[i][1]) << " " << (unsigned char)(255.f*image[i][2]) << " ";
     f << std::endl;
     f.close();
 }
 
+*/
 
 void createCheckerBoardImage() {
 	unsigned char value;
@@ -250,12 +251,15 @@ void drawRay(Vec3 p1, Vec3 p2) {
 
 
 void draw () {
+
     glEnable(GL_LIGHTING);
-	  Ray ray(Vec3(-1.0,0.,0.),Vec3(1.,0.,0.));
+
+	  Ray ray(Vec3(-1.0,0.,0.),Vec3(1.,-0.3,0.));
     std::vector<Vec3> rays_intersections;
 
-    scene.rayTrace(ray,rays_intersections,0);
+    scene.rayTrace(ray,rays_intersections);
     if (rays_intersections.size()>0) {
+      //std::cout << rays_intersections[0] << '\n';
       drawRay(ray.origin(),rays_intersections[0]);
     }
 
@@ -386,7 +390,6 @@ void motion (int x, int y) {
     }
 }
 
-
 void reshape(int w, int h) {
     camera.resize (w, h);
 }
@@ -409,10 +412,11 @@ int main (int argc, char ** argv) {
     glutMotionFunc (motion);
     glutMouseFunc (mouse);
     key ('?', 0, 0);
-    //scene.addMesh (argc == 2 ? argv[1] : "models/monkey.off");
+    scene.addMesh (argc == 2 ? argv[1] : "models/monkey.off");
     scene.addGLProgram(glProgram); //ADD ONE PER MESH!!!!!!
-		scene.addSphere(0.4,Vec3(0,0,0));
-    scene.addSphere(0.5,Vec3(1,1,0));
+    scene.add_default_light();
+		//scene.addSphere(0.4,Vec3(1.,0,0));
+    //scene.addSphere(0.2,Vec3(1.0,1.0,0));
     scene.addQuad(Vec3(-10,-1,-10),Vec3(10,-1,-10),Vec3(-10,-1,10),Vec3(10,-1.0,10));
     glutMainLoop ();
     return EXIT_SUCCESS;

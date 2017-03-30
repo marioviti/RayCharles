@@ -30,6 +30,9 @@ public:
                     a[2]*b[0] - a[0]*b[2] ,
                     a[0]*b[1] - a[1]*b[0] );
     }
+    static Vec3 componentProduct(Vec3 const & a, Vec3 const & b) {
+      return Vec3(a[0]*b[0],a[1]*b[2],a[2]*b[2]);
+    }
 
     void operator += (Vec3 const & other) {
         mVals[0] += other[0];

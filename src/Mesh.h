@@ -1,17 +1,14 @@
 #ifndef MESH_H
 #define MESH_H
 
-
 #include <vector>
 #include <string>
 #include "Vec3.h"
 #include "Ray.h"
 #include "Triangle.h"
-
+#include "Material.h"
 #include "src/GLProgram.h"
-
 #include <GL/glut.h>
-
 
 // -------------------------------------------
 // Basic Mesh class
@@ -54,6 +51,7 @@ struct MeshTriangle {
 
 
 struct RayMeshIntersection{
+  Material material;
   bool intersectionExists;
   float lambda;
   float u,v;
@@ -65,6 +63,12 @@ struct RayMeshIntersection{
 class Mesh {
 
 public:
+
+    // Material
+    Material material;
+    Mesh() { material=Material::default_material(); }
+    void set_material(const Material & my_material) { material=my_material; }
+    Material get_material() { return material; }
 
     std::vector<MeshVertex> V;
     std::vector<MeshTriangle> T;
@@ -99,6 +103,7 @@ public:
 
     RayMeshIntersection getIntersection(Ray const & ray) {
         RayMeshIntersection result;
+        result.intersectionExists = false;
         RayTriangleIntersection rays_Triangle_intersection;
         for(unsigned int i = 0; i < T.size(); ++i) {
           Triangle tri (V[ T[i].v[0] ].p, V[ T[i].v[1] ].p, V[ T[i].v[2] ].p);
@@ -114,6 +119,7 @@ public:
             }
           }
         }
+        result.material = this->material;
         return result;
     }
 

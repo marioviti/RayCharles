@@ -3,8 +3,10 @@
 #define SPHERE_H
 #define PI 3.1415926535
 #include <cmath>
+#include "Material.h"
 
 struct RaySphereIntersection{
+  Material material;
   bool intersectionExists;
   float lambda;
   float u,v;
@@ -56,6 +58,7 @@ public:
 
     RaySphereIntersection getIntersection( Ray const & ray ) const {
       RaySphereIntersection res;
+      res.intersectionExists=false;
       float delta;
       delta = pow(2*Vec3::dot((ray.origin()-centre),ray.direction()),2)-4*(pow((ray.origin()-centre).length(),2)-pow(sphere_ray,2));
 
@@ -77,6 +80,7 @@ public:
                 res.normal.normalize();
            }
       }
+      res.material = this->material;
       return res;
    }
 };

@@ -7,14 +7,23 @@
 #include "Mesh.h"
 #include "Sphere.h"
 #include "Ray.h"
+#include "Light.h"
 
 #include <GL/glut.h>
 
+#define OBJECT_TYPE_LIGHT 0
+#define OBJECT_TYPE_SPHERE 1
+#define OBJECT_TYPE_MESH 2
+
+
 struct RaySceneIntersection {
+  int objType;
+  Material material;
   bool intersectionExists;
   float lambda;
   Vec3 intersection;
   Vec3 normal;
+  Vec3 color;
 };
 
 class Scene {
@@ -24,15 +33,24 @@ class Scene {
 private:
     std::vector< Mesh > meshes;
     std::vector< Sphere > spheres;
-    std::vector< Sphere > lights;
-
+    std::vector< Light > lights;
     GLProgram* gl_Program;
+    Vec3 bkg_color;
 
 public:
-    Scene() {}
+    Scene() {bkg_color = Vec3(0.01,0.01,0.01);}
 
-    Vec3 rayTrace(Ray const & ray, std::vector<Vec3>& rays_intersections, int depth) {
+    Vec3 rayTrace(Ray const & ray,std::vector<Vec3>& rays_intersections) {
+      int MAX_DEPTH_RECURSION = 10;
       Vec3 color_value;
+      color_value = rayTraceRecursive(ray,rays_intersections,MAX_DEPTH_RECURSION);
+      return color_value;
+    }
+
+    Vec3 rayTraceRecursive(Ray const & ray, std::vector<Vec3>& rays_intersections, int depth) {
+
+      if (depth == 0) { return Vec3(0,0,0); }
+      Vec3 color_value = bkg_color;
       RaySceneIntersection result;
       RayMeshIntersection rayMeshIntersection;
       RaySphereIntersection raySphereIntersection;
@@ -40,15 +58,30 @@ public:
       // check Meshes intersection
       // initialize to a max depth value
       result.lambda = MAX_LAMBDA;
+      for(unsigned int mIt = 0 ; mIt < lights.size() ; ++mIt ) {
+        RayLightIntersection rayLightIntersection = lights[mIt].getIntersection(ray);
+        if( rayLightIntersection.intersectionExists) {
+          if (rayLightIntersection.lambda>0 && rayLightIntersection.lambda<result.lambda) {
+            result.intersectionExists = rayLightIntersection.intersectionExists;
+            result.lambda = rayLightIntersection.lambda;
+            result.intersection = rayLightIntersection.intersection;
+            result.normal = rayLightIntersection.normal;
+            result.color = rayLightIntersection.color;
+            result.objType = OBJECT_TYPE_LIGHT;
+          }
+        }
+      }
       for(unsigned int mIt = 0 ; mIt < meshes.size() ; ++mIt ) {
         rayMeshIntersection = meshes[mIt].getIntersection(ray);
         if(rayMeshIntersection.intersectionExists)
           // check if positive aka in front and near then previous interesced objects
           if (rayMeshIntersection.lambda>0 && rayMeshIntersection.lambda<result.lambda) {
-            result.intersectionExists = true;
+            result.intersectionExists = rayMeshIntersection.intersectionExists;
             result.lambda = rayMeshIntersection.lambda;
             result.intersection = rayMeshIntersection.intersection;
             result.normal = rayMeshIntersection.normal;
+            result.material = rayMeshIntersection.material;
+            result.objType = OBJECT_TYPE_MESH;
           }
         }
 
@@ -58,15 +91,41 @@ public:
         if(raySphereIntersection.intersectionExists)
           // check if positive aka in front and near then previous interesced objects
           if (raySphereIntersection.lambda>0 && raySphereIntersection.lambda<result.lambda) {
-            result.intersectionExists = true;
+            result.intersectionExists = raySphereIntersection.intersectionExists;
             result.lambda = raySphereIntersection.lambda;
             result.intersection = raySphereIntersection.intersection;
             result.normal = raySphereIntersection.normal;
+            result.material = raySphereIntersection.material;
+            result.objType = OBJECT_TYPE_SPHERE;
           }
         }
+
+        // AFTER INTERSECTION
         if(result.intersectionExists) {
+          //std::cout << result.material.get_diffuse_color() << '\n';
+          //std::cout << result.intersection << '\n';
+          //std::cout << result.normal << '\n';
+          //std::cout << result.objType << '\n';
+          //std::cout << result.lambda << '\n\n';
           rays_intersections.push_back(result.intersection);
         }
+
+        if (result.objType == OBJECT_TYPE_LIGHT) { return result.color; }
+
+        color_value = result.material.get_diffuse_color();
+        if (result.material.get_type() == DIFFUSE_SPECULAR) {
+          Vec3 p = result.intersection;
+          Vec3 n = result.normal;
+          Vec3 CD = result.material.get_diffuse_color();
+          float S = result.material.get_shininess();
+          // check the lights
+          for(unsigned int mIt = 0 ; mIt < lights.size() ; ++mIt ) {
+
+          }
+
+        }
+        // calclulate the re
+
       // we could handle rebounds at another level, like a mesh level
       // but suppose we do that, we may calculate all the rebounds for nothing.
       // so we'll need to get information from the object material.
@@ -88,7 +147,7 @@ public:
       return color_value;
     }
 
-    void addSphere(float _ray, Vec3 _center) {
+    void addSphere(float _ray, Vec3 _center ) {
       Sphere sphere = Sphere(_ray,_center);
       sphere.buildMesh(10,10);
       spheres.push_back(sphere);
@@ -110,6 +169,10 @@ public:
         meshAjoute.centerAndScaleToUnit ();
         meshAjoute.recomputeNormals ();
         meshAjoute.buildArray();
+    }
+
+    void add_default_light() {
+        lights.resize( lights.size() + 1 );
     }
 
     void addGLProgram(GLProgram* _gl_Program) {
@@ -147,7 +210,5 @@ public:
         }
     }
 };
-
-
 
 #endif
