@@ -1,6 +1,11 @@
 #ifndef SCENE_H
 #define SCENE_H
+
 #define MAX_LAMBDA 100
+#define MIN_LAMBDA_EPSILON 0.001
+#define OBJECT_TYPE_LIGHT 0
+#define OBJECT_TYPE_SPHERE 1
+#define OBJECT_TYPE_MESH 2
 
 #include <vector>
 #include <string>
@@ -10,11 +15,6 @@
 #include "Light.h"
 
 #include <GL/glut.h>
-
-#define OBJECT_TYPE_LIGHT 0
-#define OBJECT_TYPE_SPHERE 1
-#define OBJECT_TYPE_MESH 2
-
 
 struct RaySceneIntersection {
   int objType;
@@ -27,6 +27,7 @@ struct RaySceneIntersection {
 };
 
 class Scene {
+
     // Mettez ici tout ce que vous souhaitez avoir dans votre scene 3D.
     // Pour l'instant, on a uniquement des maillages, mais par la suite on pourra rajouter des objets specialises comme des spheres, des cylindres ou des cones par ex...
 
@@ -38,7 +39,7 @@ private:
     Vec3 bkg_color;
 
 public:
-    Scene() {bkg_color = Vec3(0.01,0.01,0.01);}
+    Scene() { bkg_color = Vec3(0.01,0.01,0.01); }
 
     Vec3 rayTrace(Ray const & ray,std::vector<Vec3>& rays_intersections) {
       int MAX_DEPTH_RECURSION = 10;
@@ -49,19 +50,25 @@ public:
 
     Vec3 rayTraceRecursive(Ray const & ray, std::vector<Vec3>& rays_intersections, int depth) {
 
+      // at the end of the recursion, no contribution
       if (depth == 0) { return Vec3(0,0,0); }
+
       Vec3 color_value = bkg_color;
+
       RaySceneIntersection result;
       RayMeshIntersection rayMeshIntersection;
       RaySphereIntersection raySphereIntersection;
+      RayLightIntersection rayLightIntersection;
 
-      // check Meshes intersection
-      // initialize to a max depth value
+      // initialize to a max depth value before intersecting at all
       result.lambda = MAX_LAMBDA;
+
+      // check Light intersection
       for(unsigned int mIt = 0 ; mIt < lights.size() ; ++mIt ) {
-        RayLightIntersection rayLightIntersection = lights[mIt].getIntersection(ray);
+        rayLightIntersection = lights[mIt].getIntersection(ray);
         if( rayLightIntersection.intersectionExists) {
-          if (rayLightIntersection.lambda>0 && rayLightIntersection.lambda<result.lambda) {
+          // check if positive aka in front and near then previous interesced objects
+          if (rayLightIntersection.lambda>MIN_LAMBDA_EPSILON && rayLightIntersection.lambda<result.lambda) {
             result.intersectionExists = rayLightIntersection.intersectionExists;
             result.lambda = rayLightIntersection.lambda;
             result.intersection = rayLightIntersection.intersection;
@@ -71,11 +78,13 @@ public:
           }
         }
       }
+
+      // check Meshes intersection
       for(unsigned int mIt = 0 ; mIt < meshes.size() ; ++mIt ) {
         rayMeshIntersection = meshes[mIt].getIntersection(ray);
         if(rayMeshIntersection.intersectionExists)
           // check if positive aka in front and near then previous interesced objects
-          if (rayMeshIntersection.lambda>0 && rayMeshIntersection.lambda<result.lambda) {
+          if (rayMeshIntersection.lambda>MIN_LAMBDA_EPSILON && rayMeshIntersection.lambda<result.lambda) {
             result.intersectionExists = rayMeshIntersection.intersectionExists;
             result.lambda = rayMeshIntersection.lambda;
             result.intersection = rayMeshIntersection.intersection;
@@ -88,9 +97,9 @@ public:
       // check Spheres intersection
       for(unsigned int mIt = 0 ; mIt < spheres.size() ; ++mIt ) {
         raySphereIntersection = spheres[mIt].getIntersection(ray);
-        if(raySphereIntersection.intersectionExists)
+        if(raySphereIntersection.intersectionExists){
           // check if positive aka in front and near then previous interesced objects
-          if (raySphereIntersection.lambda>0 && raySphereIntersection.lambda<result.lambda) {
+          if (raySphereIntersection.lambda>MIN_LAMBDA_EPSILON && raySphereIntersection.lambda<result.lambda) {
             result.intersectionExists = raySphereIntersection.intersectionExists;
             result.lambda = raySphereIntersection.lambda;
             result.intersection = raySphereIntersection.intersection;
@@ -99,19 +108,21 @@ public:
             result.objType = OBJECT_TYPE_SPHERE;
           }
         }
+      }
 
-        // AFTER INTERSECTION
-        if(result.intersectionExists) {
-          //std::cout << result.material.get_diffuse_color() << '\n';
-          //std::cout << result.intersection << '\n';
-          //std::cout << result.normal << '\n';
-          //std::cout << result.objType << '\n';
-          //std::cout << result.lambda << '\n\n';
-          rays_intersections.push_back(result.intersection);
-        }
+      // AFTER INTERSECTION
+      if(!result.intersectionExists) return bkg_color;
+      //std::cout << result.material.get_diffuse_color() << '\n';
+      //std::cout << result.intersection << '\n';
+      //std::cout << result.normal << '\n';
+      //std::cout << result.objType << '\n';
+      //std::cout << result.lambda << '\n\n';
+      rays_intersections.push_back(result.intersection);
 
-        if (result.objType == OBJECT_TYPE_LIGHT) { return result.color; }
-
+      // Intersecting light
+      if (result.objType == OBJECT_TYPE_LIGHT) { return result.color; }
+      // Intersecting an object
+      if (result.objType == OBJECT_TYPE_SPHERE or result.objType == OBJECT_TYPE_MESH ) {
         color_value = result.material.get_diffuse_color();
         if (result.material.get_type() == DIFFUSE_SPECULAR) {
           Vec3 p = result.intersection;
@@ -120,10 +131,13 @@ public:
           float S = result.material.get_shininess();
           // check the lights
           for(unsigned int mIt = 0 ; mIt < lights.size() ; ++mIt ) {
-
+            // calculate the vetor directed to the light
+            Vec3 l = lights[mIt].get_sample();
+            std::cout << l << '\n';
+            RayLightIntersection intersection;
           }
-
         }
+      }
         // calclulate the re
 
       // we could handle rebounds at another level, like a mesh level
@@ -187,7 +201,6 @@ public:
             mesh.draw();
             gl_Program->stop();
             //mesh.drawCage();
-
             /*
             // copies affichees : (Exercice 3)
             glTranslatef( .  ,  .  ,  .  ); glRotatef( .  ,  .  ,  .  ,  .  ); glScalef( .  ,  .  ,  .  );
