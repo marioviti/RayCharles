@@ -69,7 +69,7 @@ public:
                 res.intersectionExists = true,
                 res.lambda =eps_Min;
                 res.intersection = ray.origin() + eps_Min*ray.direction();
-                res.normal = (centre-res.intersection);
+                res.normal = (res.intersection-centre);
                 res.normal.normalize();
            }
            else if (eps_Max >=0){

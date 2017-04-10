@@ -34,6 +34,9 @@
 
 #include "src/matrixUtilities.h"
 
+#include "src/Instance.h"
+int Instance::serial_id=0;
+
 using namespace std;
 
 // -------------------------------------------
@@ -56,7 +59,7 @@ static bool fullScreen = false;
 // -------------------------------------------
 Scene scene;
 
-static Vec3 inputLightPosition = Vec3(1.0, 5.0, 5.0);
+static Vec3 inputLightPosition = Vec3(-1.0, -1.0, 0.0);
 int lightIsInCamSpace = 1;
 float specular_intensity = 3.3;
 GLProgram *glProgram;
@@ -74,6 +77,7 @@ unsigned int checkerBoardImageHeight = 256;
 GLuint checkerBoardImageTextudeIdx;
 GLuint colorTexture_binding_Index;
 std::vector<Vec3> rays_intersection;
+Ray test_ray = Ray(Vec3(-1.0,0.,0.),Vec3(1.,-0.0,0.));
 
 /*
 
@@ -252,16 +256,15 @@ void drawRay(Vec3 p1, Vec3 p2) {
 
 void draw () {
 
+		//std::vector<Vec3> rays_intersection;
+		//scene.rayTrace(test_ray,rays_intersection);
     glEnable(GL_LIGHTING);
-
-	  Ray ray(Vec3(-1.0,0.,0.),Vec3(1.,-0.3,0.));
-    std::vector<Vec3> rays_intersections;
-
-    scene.rayTrace(ray,rays_intersections);
-    if (rays_intersections.size()>0) {
-      //std::cout << rays_intersections[0] << '\n';
-      drawRay(ray.origin(),rays_intersections[0]);
-    }
+		if (rays_intersection.size()>0) {
+			drawRay(test_ray.origin(),rays_intersection[0]);
+			for (int i = 0; i<rays_intersection.size()-1; i++) {
+				drawRay(rays_intersection[i],rays_intersection[i+1]);
+			}
+		}
 
   	scene.draw();
 
@@ -414,10 +417,15 @@ int main (int argc, char ** argv) {
     key ('?', 0, 0);
     scene.addMesh (argc == 2 ? argv[1] : "models/monkey.off");
     scene.addGLProgram(glProgram); //ADD ONE PER MESH!!!!!!
-    scene.add_default_light();
-		//scene.addSphere(0.4,Vec3(1.,0,0));
-    //scene.addSphere(0.2,Vec3(1.0,1.0,0));
+    scene.add_light(inputLightPosition);
+		//scene.addSphere(0.4,Vec3(0.,0.,0.));
+    scene.addSphere(0.3,Vec3(-1.0,1.0,1.0));
     scene.addQuad(Vec3(-10,-1,-10),Vec3(10,-1,-10),Vec3(-10,-1,10),Vec3(10,-1.0,10));
+
+		// RAY TRACER
+
+    scene.rayTrace(test_ray,rays_intersection);
+
     glutMainLoop ();
     return EXIT_SUCCESS;
 }

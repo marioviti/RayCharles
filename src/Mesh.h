@@ -3,12 +3,16 @@
 
 #include <vector>
 #include <string>
+#include "Instance.h"
 #include "Vec3.h"
 #include "Ray.h"
 #include "Triangle.h"
 #include "Material.h"
 #include "src/GLProgram.h"
 #include <GL/glut.h>
+
+#define MESH_MIN_LAMBDA_EPSILON 0.0000001
+#define MESH_MAX_LAMBDA 1000
 
 // -------------------------------------------
 // Basic Mesh class
@@ -60,7 +64,7 @@ struct RayMeshIntersection{
   Vec3 normal;
 };
 
-class Mesh {
+class Mesh:public Instance {
 
 public:
 
@@ -104,12 +108,13 @@ public:
     RayMeshIntersection getIntersection(Ray const & ray) {
         RayMeshIntersection result;
         result.intersectionExists = false;
+        result.lambda = MESH_MAX_LAMBDA;
         RayTriangleIntersection rays_Triangle_intersection;
         for(unsigned int i = 0; i < T.size(); ++i) {
           Triangle tri (V[ T[i].v[0] ].p, V[ T[i].v[1] ].p, V[ T[i].v[2] ].p);
           rays_Triangle_intersection = tri.getIntersection(ray);
           if(rays_Triangle_intersection.intersectionExists) {
-            if(result.lambda < rays_Triangle_intersection.lambda){
+            if( rays_Triangle_intersection.lambda > MESH_MIN_LAMBDA_EPSILON && rays_Triangle_intersection.lambda < result.lambda){
               result.intersectionExists = rays_Triangle_intersection.intersectionExists;
               result.lambda = rays_Triangle_intersection.lambda;
               result.u = rays_Triangle_intersection.u;
@@ -161,14 +166,12 @@ public:
     void draw() const {
       glEnableClientState(GL_VERTEX_ARRAY);
       glEnableClientState(GL_NORMAL_ARRAY);
-
       glVertexPointer(3, GL_FLOAT, 3*sizeof(float),(GLvoid*)(&vertices[0]));
       glNormalPointer(GL_FLOAT, 3*sizeof(float),(GLvoid*)(&normals[0]));
       glDrawElements(GL_TRIANGLES,triangles.size(),GL_UNSIGNED_INT,(GLvoid*)(&triangles[0]));
     }
 
     void drawCage() const {
-
       glDisable(GL_LIGHTING);
       glColor3f(0.3,0.3,1);
       glEnableClientState(GL_VERTEX_ARRAY);
@@ -177,7 +180,5 @@ public:
       glEnable(GL_LIGHTING);
     }
 };
-
-
 
 #endif

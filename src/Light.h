@@ -2,12 +2,13 @@
 #define LIGHT_H
 #include "Vec3.h"
 #include "Sphere.h"
+#include "Instance.h"
 
 #include <stdio.h>
 #include <time.h>
 
 #define SPHERIC 0
-#define MAX_SEED 100000000
+#define LIGHT_MAX_SEED 100000000
 
 struct RayLightIntersection{
   bool intersectionExists;
@@ -19,9 +20,7 @@ struct RayLightIntersection{
   Vec3 color;
 };
 
-class Light {
-
-
+class Light:public Instance {
   private:
     int type;
     Sphere ligth_sphere;
@@ -30,19 +29,11 @@ class Light {
     int myseed;
 
   public:
+    Light() { init_seed(); }
 
-    Light( Sphere _sphere ) {
-      init_seed();
+    Light(Vec3 const & position_) : Light() {
       type = SPHERIC;
-      ligth_sphere = _sphere;
-      position = _sphere.centre;
-      color=Vec3(1.,1.,1.);
-    }
-
-    Light() {
-      init_seed();
-      type = SPHERIC;
-      ligth_sphere = Sphere(0.01,Vec3(1.,1.,1.));
+      ligth_sphere = Sphere(0.01,position_);
       position=ligth_sphere.centre;
       color=Vec3(1.,1.,1.);
     }
@@ -53,23 +44,20 @@ class Light {
     }
 
     int grab_seed() {
-      myseed = (myseed + 1)%MAX_SEED;
+      myseed = (myseed + 1)%LIGHT_MAX_SEED;
       return myseed;
     }
 
-    Vec3 get_color() {return color;}
-
+    Vec3 get_color() { return color; }
     Vec3 get_position() { return position; }
     Vec3 get_sample() {
       float x,y,z;
-      while(true) {
-        srand(grab_seed());
-        x = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX));
-        y = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX));
-        z = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX));
-        if (x*x + y*y + z*z <=1) { return position+ligth_sphere.sphere_ray*(Vec3(x,y,z)); }
-     }
-      return position;
+
+      srand(grab_seed());
+      x = static_cast <float> ( (rand()) / (static_cast <float> (RAND_MAX)) )*2 -1;
+      y = static_cast <float> ( (rand()) / (static_cast <float> (RAND_MAX)) )*2 -1;
+      z = static_cast <float> ( (rand()) / (static_cast <float> (RAND_MAX)) )*2 -1;
+      return position+ligth_sphere.sphere_ray*(Vec3(x,y,z).normalize());
     }
 
     RayLightIntersection getIntersection(Ray const & ray ) const {
