@@ -22,6 +22,7 @@
 #include <string>
 #include <cstdio>
 #include <cstdlib>
+#define RGB_COMPONENT_COLOR 255
 
 #include <algorithm>
 #include <GL/glut.h>
@@ -38,6 +39,8 @@
 int Instance::serial_id=0;
 
 using namespace std;
+
+
 
 // -------------------------------------------
 // OpenGL/GLUT application code.
@@ -59,7 +62,7 @@ static bool fullScreen = false;
 // -------------------------------------------
 Scene scene;
 
-static Vec3 inputLightPosition = Vec3(-1.0, -1.0, 0.0);
+static Vec3 inputLightPosition = Vec3(-0.3, 1.0, 0.4);
 int lightIsInCamSpace = 1;
 float specular_intensity = 3.3;
 GLProgram *glProgram;
@@ -79,7 +82,46 @@ GLuint colorTexture_binding_Index;
 std::vector<Vec3> rays_intersection;
 Ray test_ray = Ray(Vec3(-1.0,0.,0.),Vec3(1.,-0.0,0.));
 
-/*
+void writePPM(  std::vector<Vec3>&  image, std::string&  filename, int w, int h) {
+	ofstream f(filename.c_str(), ios::binary);
+	if (f.fail()) {
+			std::cout << "Could not open file: " << filename << std::endl;
+			return;
+	}
+	// A "magic number" for identifying the file type. A Plain ppm image's magic number is the two characters "P3".
+	f << "P3";
+	//Whitespace (blanks, TABs, CRs, LFs).
+	f << '\t';
+	// A width, formatted as ASCII characters in decimal.
+	f << w;
+	// Whitespace.
+	f << ' ';
+	// A height, again in ASCII decimal.
+	f << h;
+	// newline.
+	f << std::endl;
+	// the maximum color value (Maxval), again in ASCII decimal. Must be less than 65536 and more than zero
+	f << RGB_COMPONENT_COLOR;
+	// A single whitespace character (usually a newline).
+	f << std::endl;
+	// A raster of Height rows, in order from top to bottom.
+	// Each sample in the raster has white space before and after it.
+	// There must be at least one character of white space between any two samples,
+	// but there is no maximum. There is no particular separation of one pixel
+	// from another -- just the required separation between the blue sample of
+	// one pixel from the red sample of the next pixel.
+	// The most significant byte is first.
+
+	for (int y=0; y<h; y++){
+		for (int x=0; x<w; x++) {
+			f << ' ' << (int)(RGB_COMPONENT_COLOR*image[x + y*w][0]); // R component
+			f << ' ' << (int)(RGB_COMPONENT_COLOR*image[x + y*w][1]); // G component
+			f << ' ' << (int)(RGB_COMPONENT_COLOR*image[x + y*w][2]) << ' '; // Bcomponent
+		}
+		f << std::endl;
+	}
+	f.close();
+}
 
 void rayTraceFromCamera() {
     int w = glutGet(GLUT_WINDOW_WIDTH)  ,   h = glutGet(GLUT_WINDOW_HEIGHT);
@@ -98,19 +140,9 @@ void rayTraceFromCamera() {
     }
 
     std::string filename = "./myImage.ppm";
-    ofstream f(filename.c_str(), ios::binary);
-    if (f.fail()) {
-        cout << "Could not open file: " << filename << endl;
-        return;
-    }
-    f << "P3" << std::endl << w << " " << h << std::endl << 255 << std::endl;
-    for (int i=0; i<w*h; i++)
-        f << (int)(255.f*image[i][0]) << " " << (unsigned char)(255.f*image[i][1]) << " " << (unsigned char)(255.f*image[i][2]) << " ";
-    f << std::endl;
-    f.close();
-}
 
-*/
+		writePPM(image,filename,w,h);
+}
 
 void createCheckerBoardImage() {
 	unsigned char value;
@@ -419,12 +451,13 @@ int main (int argc, char ** argv) {
     scene.addGLProgram(glProgram); //ADD ONE PER MESH!!!!!!
     scene.add_light(inputLightPosition);
 		//scene.addSphere(0.4,Vec3(0.,0.,0.));
-    scene.addSphere(0.3,Vec3(-1.0,1.0,1.0));
+    scene.addSphere(0.2,Vec3(-0.8,0.5,1.0));
     scene.addQuad(Vec3(-10,-1,-10),Vec3(10,-1,-10),Vec3(-10,-1,10),Vec3(10,-1.0,10));
 
 		// RAY TRACER
 
-    scene.rayTrace(test_ray,rays_intersection);
+		rayTraceFromCamera();
+    //scene.rayTrace(test_ray,rays_intersection);
 
     glutMainLoop ();
     return EXIT_SUCCESS;

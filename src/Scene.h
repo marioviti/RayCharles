@@ -3,7 +3,8 @@
 
 #define SCENE_MAX_SEED 10000000
 #define SCEN_MAX_LAMBDA 1000
-#define SCENE_MIN_LAMBDA_EPSILON 0.0000001
+#define SCENE_RAY_OFFSET 0.001f
+#define SCENE_MIN_LAMBDA_EPSILON 0.001f
 #define SCENE_OBJECT_TYPE_LIGHT 0
 #define SCENE_OBJECT_TYPE_SPHERE 1
 #define SCENE_OBJECT_TYPE_MESH 2
@@ -46,7 +47,7 @@ private:
     Vec3 bkg_color;
 
 public:
-    Scene() { bkg_color = Vec3(0.01,0.01,0.01); max_depth_recursion_path_trace=2;}
+    Scene() { bkg_color = Vec3(0.1,0.2,0.6); max_depth_recursion_path_trace=10; }
 
     int get_seed() { return ++seed%SCENE_MAX_SEED; }
 
@@ -93,10 +94,10 @@ public:
             result.objType = SCENE_OBJECT_TYPE_MESH;
             result.objUniqueId = meshes[mIt].get_unique_id();
 
-            std::cout << '\n' << "intersection" << '\n';
-            std::cout << "intersection " << result.intersection << '\n';
-            std::cout << "lambda " << result.lambda << '\n';
-            std::cout << "normal " << result.normal << '\n';
+            //std::cout << '\n' << "intersection" << '\n';
+            //std::cout << "intersection " << result.intersection << '\n';
+            //std::cout << "lambda " << result.lambda << '\n';
+            //std::cout << "normal " << result.normal << '\n';
           }
         }
 
@@ -130,14 +131,14 @@ public:
       // initialize color to black
       Vec3 color_value = Vec3(0,0,0);
       // at the end of the recursion, no contribution send back no light
-      if (depth == 0) { return Vec3(0.0,0.0,0.0); }
+      if (depth == 0) { return color_value; }
 
       RaySceneIntersection result = getIntersection(ray);
       // If there was no intersection return the bkg color
       if(!result.intersectionExists) return bkg_color;
 
       // TESTS
-      rays_intersections.push_back(result.intersection);
+      //rays_intersections.push_back(result.intersection);
       // End TESTS
 
       // PATH TRACING
@@ -149,10 +150,10 @@ public:
         // DIFFUSE BRDF
         if (result.material.get_type() == DIFFUSE_SPECULAR) {
 
-          std::cout << '\n' << "intersection in BRDF" << '\n';
-          std::cout << "intersection " << result.intersection << '\n';
-          std::cout << "lambda " << result.lambda << '\n';
-          std::cout << "normal " << result.normal << '\n';
+          //std::cout << '\n' << "intersection in BRDF" << '\n';
+          //std::cout << "intersection " << result.intersection << '\n';
+          //std::cout << "lambda " << result.lambda << '\n';
+          //std::cout << "normal " << result.normal << '\n';
 
           Vec3 DC = result.material.get_diffuse_color(); //diffuse color
           Vec3 SC = result.material.get_specular_color(); //specular color
@@ -175,8 +176,8 @@ public:
 
             // DIFFUSE_SPECULAR object have no contribution from light
             // coming from behind
-            if( theta_1 >=0 ) {
-              Ray l_ray = Ray(p,l_dir);
+            if( theta_1 > 0 ) {
+              Ray l_ray = Ray(p,l_dir,SCENE_RAY_OFFSET);
               // calculate omega in
               RaySceneIntersection result = getIntersection(l_ray);
               if (result.intersectionExists) {
@@ -186,7 +187,7 @@ public:
                   // a particular case. a ray may intersect the light
                   // but the normal to the intersection is opposite to the ray
                   // so check befor intersecting to avoid lounching
-                  float solid_angle = 1.f;
+                  float solid_angle = lights[mIt].solid_angle(p);
                   float theta_2 = std::max(0.f,Vec3::dot(refl_ray.direction(),-1*ray.direction()));
                   color_value += solid_angle * Vec3::componentProduct(
                     theta_1*DC + SC*std::pow(theta_2,S), // DIFFUSE + SPECULAR
@@ -200,7 +201,7 @@ public:
           // BRDF part 2
 
           // Montecarlo sampling
-          Ray random_ray = Ray(p,Vec3::random_in_emisphere(p,n,get_seed()));
+          Ray random_ray = Ray(p,Vec3::random_in_emisphere(p,n,get_seed()),SCENE_RAY_OFFSET);
           Ray reflected_random_ray = Ray::reflected_ray(random_ray.direction(),n,p);
           float solid_angle = 1.f;
           float sigma_1 = Vec3::dot(n,random_ray.direction());

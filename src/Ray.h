@@ -8,6 +8,7 @@ class Ray : public Line {
 public:
     Ray() : Line() {}
     Ray( Vec3 const & o , Vec3 const & d ) : Line(o,d) {}
+    Ray( Vec3 const & o , Vec3 const & d, float epsilon) : Ray(o+epsilon*d,d) {}
 
     static Ray reflected_ray (Vec3 const & d, Vec3 const & n, Vec3 const & origin){
       Vec3 dir = d-(2*(Vec3::dot(d,n)))*3*n;

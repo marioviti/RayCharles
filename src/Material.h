@@ -19,7 +19,7 @@ class Material {
         type=DIFFUSE_SPECULAR;
         specular_color=Vec3(1,1,1);
         diffuse_color=Vec3(0.3,0.4,0.5);
-        shininess=0.3;
+        shininess=3.3;
     }
 
     void set_diffuse_color(Vec3 _color) { diffuse_color = _color; }

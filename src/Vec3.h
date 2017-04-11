@@ -53,9 +53,11 @@ public:
     }
 
     static Vec3 random_in_emisphere(Vec3 const & o, Vec3 const & n, int seed) {
-      Vec3 sample = random_unit_vector(seed);
-      float theta =  Vec3::dot(sample,n);
-      if (theta < 0) sample.opposite();
+      Vec3 sample;
+      float theta = 0;
+      sample = random_unit_vector(seed);
+      theta = Vec3::dot(sample,n);
+      if (theta<0) sample.opposite();
       return sample;
     }
 

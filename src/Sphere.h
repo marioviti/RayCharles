@@ -56,6 +56,13 @@ public:
       buildArray();
     }
 
+    float solid_angle(Vec3 const & p) {
+      Vec3 distance_v = p-centre;
+      float square_dist = Vec3::dot(distance_v,distance_v);
+      float square_ratio = sphere_ray/square_dist;
+      return 4*PI*square_ratio;
+    }
+
     RaySphereIntersection getIntersection( Ray const & ray ) const {
       RaySphereIntersection res;
       res.intersectionExists=false;
