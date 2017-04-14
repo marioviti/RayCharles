@@ -447,10 +447,10 @@ int main (int argc, char ** argv) {
     glutMotionFunc (motion);
     glutMouseFunc (mouse);
     key ('?', 0, 0);
-    scene.addMesh (argc == 2 ? argv[1] : "models/monkey.off");
+    //scene.addMesh (argc == 2 ? argv[1] : "models/monkey.off");
     scene.addGLProgram(glProgram); //ADD ONE PER MESH!!!!!!
     scene.add_light(inputLightPosition);
-		//scene.addSphere(0.4,Vec3(0.,0.,0.));
+		scene.addSphere(0.4,Vec3(0.,0.,0.));
     scene.addSphere(0.2,Vec3(-0.8,0.5,1.0));
     scene.addQuad(Vec3(-10,-1,-10),Vec3(10,-1,-10),Vec3(-10,-1,10),Vec3(10,-1.0,10));
 

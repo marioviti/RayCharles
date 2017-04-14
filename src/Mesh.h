@@ -86,99 +86,19 @@ public:
     std::vector<unsigned int> cageOrder;
     std::vector<Vec3> cageVertices;
 
+    // Rendering routines
+    RayMeshIntersection getIntersection(Ray const & ray);
+
+    // Create routines
     void setQuads(Vec3 c1, Vec3 c2, Vec3 c3, Vec3 c4);
     void loadOFF (const std::string & filename);
     void recomputeNormals ();
     void centerAndScaleToUnit ();
     void scaleUnit ();
-
-    void buildArray() {
-  		for (unsigned int i = 0; i < T.size(); i++) {
-  			triangles.push_back(T[i].v[0]);
-  			triangles.push_back(T[i].v[1]);
-  			triangles.push_back(T[i].v[2]);
-  		}
-  		for (unsigned int i = 0; i < V.size(); i++) {
-  			vertices.push_back(V[i].p);
-  			normals.push_back(V[i].n);
-  		}
-      build_cage();
-	  }
-
-    RayMeshIntersection getIntersection(Ray const & ray) {
-        RayMeshIntersection result;
-        result.intersectionExists = false;
-        result.lambda = MESH_MAX_LAMBDA;
-        RayTriangleIntersection rays_Triangle_intersection;
-        for(unsigned int i = 0; i < T.size(); ++i) {
-          Triangle tri (V[ T[i].v[0] ].p, V[ T[i].v[1] ].p, V[ T[i].v[2] ].p);
-          rays_Triangle_intersection = tri.getIntersection(ray);
-          if(rays_Triangle_intersection.intersectionExists) {
-            if( rays_Triangle_intersection.lambda > MESH_MIN_LAMBDA_EPSILON && rays_Triangle_intersection.lambda < result.lambda){
-              result.intersectionExists = rays_Triangle_intersection.intersectionExists;
-              result.lambda = rays_Triangle_intersection.lambda;
-              result.u = rays_Triangle_intersection.u;
-              result.v = rays_Triangle_intersection.v;
-              result.intersection = rays_Triangle_intersection.intersection;
-              result.normal = rays_Triangle_intersection.normal;
-            }
-          }
-        }
-        result.material = this->material;
-        return result;
-    }
-
-    void build_cage() {
-
-      float max_x = 0.0, min_x = 0.0,
-            max_y =0.0, min_y = 0.0,
-            max_z =0.0, min_z = 0.0;
-
-      for (unsigned int i = 0; i < V.size(); i++) {
-        if (V[i].p[0] > max_x) max_x = V[i].p[0];
-        if (V[i].p[0] < min_x) min_x = V[i].p[0];
-        if (V[i].p[1] > max_y) max_y = V[i].p[1];
-        if (V[i].p[1] < min_y) min_y = V[i].p[1];
-        if (V[i].p[2] > max_z) max_z = V[i].p[2];
-        if (V[i].p[2] < min_z) min_z = V[i].p[2];
-      }
-
-      cageVertices.push_back(Vec3( max_x , max_y , max_z ));
-      cageVertices.push_back(Vec3( max_x , min_y , max_z ));
-      cageVertices.push_back(Vec3( min_x , min_y , max_z ));
-      cageVertices.push_back(Vec3( min_x , max_y , max_z ));
-      cageVertices.push_back(Vec3( min_x , max_y , min_z ));
-      cageVertices.push_back(Vec3( max_x , max_y , min_z ));
-      cageVertices.push_back(Vec3( max_x , min_y , min_z ));
-      cageVertices.push_back(Vec3( min_x , min_y , min_z ));
-
-      for (unsigned int i = 1; i < cageVertices.size(); i++) {
-        cageOrder.push_back(i-1);
-        cageOrder.push_back(i);
-      }
-      cageOrder.push_back(7);cageOrder.push_back(4);
-      cageOrder.push_back(7);cageOrder.push_back(2);
-      cageOrder.push_back(5);cageOrder.push_back(0);
-      cageOrder.push_back(6);cageOrder.push_back(1);
-      cageOrder.push_back(3);cageOrder.push_back(0);
-    }
-
-    void draw() const {
-      glEnableClientState(GL_VERTEX_ARRAY);
-      glEnableClientState(GL_NORMAL_ARRAY);
-      glVertexPointer(3, GL_FLOAT, 3*sizeof(float),(GLvoid*)(&vertices[0]));
-      glNormalPointer(GL_FLOAT, 3*sizeof(float),(GLvoid*)(&normals[0]));
-      glDrawElements(GL_TRIANGLES,triangles.size(),GL_UNSIGNED_INT,(GLvoid*)(&triangles[0]));
-    }
-
-    void drawCage() const {
-      glDisable(GL_LIGHTING);
-      glColor3f(0.3,0.3,1);
-      glEnableClientState(GL_VERTEX_ARRAY);
-      glVertexPointer(3, GL_FLOAT, 3*sizeof(float),(GLvoid*)(&cageVertices[0]));
-      glDrawElements(GL_LINES,cageOrder.size(),GL_UNSIGNED_INT,(GLvoid*)(&cageOrder[0]));
-      glEnable(GL_LIGHTING);
-    }
+    void buildArray();
+    void build_cage();
+    void draw() const;
+    void drawCage() const;
 };
 
 #endif
