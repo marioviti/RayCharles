@@ -16,6 +16,7 @@
 
 #include "src/GLProgram.h"
 #include "src/Exception.h"
+#include "src/PPMIO.h"
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -39,8 +40,6 @@
 int Instance::serial_id=0;
 
 using namespace std;
-
-
 
 // -------------------------------------------
 // OpenGL/GLUT application code.
@@ -82,49 +81,9 @@ GLuint colorTexture_binding_Index;
 std::vector<Vec3> rays_intersection;
 Ray test_ray = Ray(Vec3(-1.0,0.,0.),Vec3(1.,-0.0,0.));
 
-void writePPM(  std::vector<Vec3>&  image, std::string&  filename, int w, int h) {
-	ofstream f(filename.c_str(), ios::binary);
-	if (f.fail()) {
-			std::cout << "Could not open file: " << filename << std::endl;
-			return;
-	}
-	// A "magic number" for identifying the file type. A Plain ppm image's magic number is the two characters "P3".
-	f << "P3";
-	//Whitespace (blanks, TABs, CRs, LFs).
-	f << '\t';
-	// A width, formatted as ASCII characters in decimal.
-	f << w;
-	// Whitespace.
-	f << ' ';
-	// A height, again in ASCII decimal.
-	f << h;
-	// newline.
-	f << std::endl;
-	// the maximum color value (Maxval), again in ASCII decimal. Must be less than 65536 and more than zero
-	f << RGB_COMPONENT_COLOR;
-	// A single whitespace character (usually a newline).
-	f << std::endl;
-	// A raster of Height rows, in order from top to bottom.
-	// Each sample in the raster has white space before and after it.
-	// There must be at least one character of white space between any two samples,
-	// but there is no maximum. There is no particular separation of one pixel
-	// from another -- just the required separation between the blue sample of
-	// one pixel from the red sample of the next pixel.
-	// The most significant byte is first.
-
-	for (int y=0; y<h; y++){
-		for (int x=0; x<w; x++) {
-			f << ' ' << (int)(RGB_COMPONENT_COLOR*image[x + y*w][0]); // R component
-			f << ' ' << (int)(RGB_COMPONENT_COLOR*image[x + y*w][1]); // G component
-			f << ' ' << (int)(RGB_COMPONENT_COLOR*image[x + y*w][2]) << ' '; // Bcomponent
-		}
-		f << std::endl;
-	}
-	f.close();
-}
-
 void rayTraceFromCamera() {
-    int w = glutGet(GLUT_WINDOW_WIDTH)  ,   h = glutGet(GLUT_WINDOW_HEIGHT);
+    unsigned int w = (unsigned int) glutGet(GLUT_WINDOW_WIDTH),
+		h = (unsigned int) glutGet(GLUT_WINDOW_HEIGHT);
     std::cout << "Ray tracing a " << w << " x " << h << " image" << std::endl;
     camera.apply();
     Vec3 pos , dir;
@@ -140,8 +99,7 @@ void rayTraceFromCamera() {
     }
 
     std::string filename = "./myImage.ppm";
-
-		writePPM(image,filename,w,h);
+		PPMIO::write_ppm(image,filename,w,h);
 }
 
 void createCheckerBoardImage() {
@@ -169,6 +127,7 @@ void printUsage () {
          << "Keyboard commands" << endl
          << "------------------" << endl
          << " ?: Print help" << endl
+         << " r: Render!" << endl
          << " w: Toggle Wireframe Mode" << endl
          << " g: Toggle Gouraud Shading Mode" << endl
          << " f: Toggle full screen mode" << endl
