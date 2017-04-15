@@ -3,6 +3,18 @@
 #include "Material.h"
 #include "Ray.h"
 
+/*
+void calculate_uv(Vec3 n) {
+
+  //phi,theta -> u,v = [0-2Pi,0-2Pi] -> [0-1,0-1]
+
+  float phi = std::acos(n[1]);
+  float theta = std::asin(n[0]/std::sin(phi));
+  float u = phi/2*PI;
+  float v = theta/2*PI;
+}
+*/
+
 float Sphere::solid_angle(Vec3 const & p) {
   Vec3 distance_v = p-centre;
   float square_dist = Vec3::dot(distance_v,distance_v);

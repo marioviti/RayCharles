@@ -34,6 +34,27 @@ RaySceneIntersection Scene::getIntersection(Ray const & ray) {
     }
   }
 
+  // check Cubes intersection
+  for(unsigned int mIt = 0 ; mIt < cubes.size() ; ++mIt ) {
+    rayMeshIntersection = cubes[mIt].getIntersection(ray);
+    if(rayMeshIntersection.intersectionExists)
+      // check if positive aka in front and near then previous interesced objects
+      if (rayMeshIntersection.lambda>SCENE_MIN_LAMBDA_EPSILON && rayMeshIntersection.lambda<result.lambda) {
+        result.intersectionExists = rayMeshIntersection.intersectionExists;
+        result.lambda = rayMeshIntersection.lambda;
+        result.intersection = rayMeshIntersection.intersection;
+        result.normal = rayMeshIntersection.normal;
+        result.material = rayMeshIntersection.material;
+        result.objType = SCENE_OBJECT_TYPE_MESH;
+        result.objUniqueId = cubes[mIt].get_unique_id();
+
+        //std::cout << '\n' << "intersection" << '\n';
+        //std::cout << "intersection " << result.intersection << '\n';
+        //std::cout << "lambda " << result.lambda << '\n';
+        //std::cout << "normal " << result.normal << '\n';
+      }
+  }
+
   // check Meshes intersection
   for(unsigned int mIt = 0 ; mIt < meshes.size() ; ++mIt ) {
     rayMeshIntersection = meshes[mIt].getIntersection(ray);
@@ -53,7 +74,7 @@ RaySceneIntersection Scene::getIntersection(Ray const & ray) {
         //std::cout << "lambda " << result.lambda << '\n';
         //std::cout << "normal " << result.normal << '\n';
       }
-    }
+  }
 
   // check Spheres intersection
   for(unsigned int mIt = 0 ; mIt < spheres.size() ; ++mIt ) {
@@ -171,8 +192,14 @@ Vec3 Scene::rayTraceRecursive(Ray const & ray, std::vector<Vec3>& rays_intersect
 
 void Scene::addSphere(float _ray, Vec3 _center ) {
   Sphere sphere = Sphere(_ray,_center);
-  sphere.buildMesh(10,10);
+  sphere.buildMesh(15,15);
   spheres.push_back(sphere);
+}
+
+void Scene::addCube(float _side, Vec3 _center ) {
+  Cube cube = Cube(_side,_center);
+  cube.buildMesh(4);
+  cubes.push_back(cube);
 }
 
 void Scene::addQuad(Vec3 c1, Vec3 c2, Vec3 c3, Vec3 c4) {
@@ -217,6 +244,10 @@ void Scene::draw() const {
       glTranslatef( .  ,  .  ,  .  ); glRotatef( .  ,  .  ,  .  ,  .  ); glScalef( .  ,  .  ,  .  );
       mesh.draw();
       */
+  }
+  for( unsigned int mIt = 0 ; mIt < cubes.size() ; ++mIt ) {
+      Cube const & cube = cubes[mIt];
+      cube.draw();
   }
   for( unsigned int mIt = 0 ; mIt < spheres.size() ; ++mIt ) {
       Sphere const & sphere = spheres[mIt];

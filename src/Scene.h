@@ -15,6 +15,7 @@
 #include "Sphere.h"
 #include "Ray.h"
 #include "Light.h"
+#include "Cube.h"
 
 #include <GL/glut.h>
 
@@ -38,6 +39,7 @@ private:
 
     std::vector<Mesh> meshes;
     std::vector<Sphere> spheres;
+    std::vector<Cube> cubes;
     std::vector<Light> lights;
 
     int seed; //use to initialize random functions
@@ -57,6 +59,7 @@ public:
 
     // OBJECT ADD methods
     void addSphere(float _ray, Vec3 _center );
+    void addCube(float _side, Vec3 _center );
     void addQuad(Vec3 c1, Vec3 c2, Vec3 c3, Vec3 c4);
     void addMesh(std::string const & modelFilename);
     void add_light(Vec3 const & light_position);

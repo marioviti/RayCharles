@@ -352,6 +352,9 @@ void idle () {
 
 void key (unsigned char keyPressed, int x, int y) {
     switch (keyPressed) {
+		case 'r':
+			rayTraceFromCamera();
+			break;
     case 'f':
         if (fullScreen == true) {
             glutReshapeWindow (SCREENWIDTH, SCREENHEIGHT);
@@ -450,13 +453,14 @@ int main (int argc, char ** argv) {
     //scene.addMesh (argc == 2 ? argv[1] : "models/monkey.off");
     scene.addGLProgram(glProgram); //ADD ONE PER MESH!!!!!!
     scene.add_light(inputLightPosition);
-		scene.addSphere(0.4,Vec3(0.,0.,0.));
+		//scene.addSphere(0.4,Vec3(0.,0.,0.));
+		scene.addCube(1.0,Vec3(0.,0.,0.));
     scene.addSphere(0.2,Vec3(-0.8,0.5,1.0));
     scene.addQuad(Vec3(-10,-1,-10),Vec3(10,-1,-10),Vec3(-10,-1,10),Vec3(10,-1.0,10));
 
 		// RAY TRACER
 
-		rayTraceFromCamera();
+		//rayTraceFromCamera();
     //scene.rayTrace(test_ray,rays_intersection);
 
     glutMainLoop ();
