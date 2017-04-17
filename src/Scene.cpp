@@ -247,11 +247,15 @@ void Scene::draw() const {
   }
   for( unsigned int mIt = 0 ; mIt < cubes.size() ; ++mIt ) {
       Cube const & cube = cubes[mIt];
+      gl_Program->use();
       cube.draw();
+      gl_Program->stop();
   }
   for( unsigned int mIt = 0 ; mIt < spheres.size() ; ++mIt ) {
       Sphere const & sphere = spheres[mIt];
+      gl_Program->use();
       sphere.draw();
+      gl_Program->stop();
       //sphere.drawCage();
       /*
       // copies affichees : (Exercice 3)

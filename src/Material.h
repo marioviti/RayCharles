@@ -6,6 +6,7 @@
 #define DIFFUSE_SPECULAR 2
 
 #include "Vec3.h"
+#include "src/Texture.h"
 
 class Material {
   private:
@@ -33,6 +34,8 @@ class Material {
 
     void set_type(int _type) { type = _type; }
     int get_type() { return type; }
+
+    void set_texture();
 
     static Material default_material() {
       return Material();

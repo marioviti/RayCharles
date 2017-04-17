@@ -1,6 +1,13 @@
 # RayCharles
 RayTracer with realtime Editor: Combining realtime 3D acceleration with photorealistic rendering.
 
+
+## TODO
+
+* Ray tracer:
+Antialiasing
+Texturing Sphere with Mercatore projection.
+
 ## OpenGL Basics.
 
 Modern OpenGL tends to minimize calls between Cpu and Gpu as each

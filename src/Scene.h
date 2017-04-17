@@ -49,7 +49,7 @@ private:
     Vec3 bkg_color;
 
 public:
-    Scene() { bkg_color = Vec3(0.1,0.2,0.6); max_depth_recursion_path_trace=10; }
+    Scene() { bkg_color = Vec3(0.1,0.2,0.6); max_depth_recursion_path_trace=8; }
 
     // Rendering methods
     int get_seed();

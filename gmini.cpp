@@ -61,8 +61,8 @@ static bool fullScreen = false;
 // -------------------------------------------
 Scene scene;
 
-static Vec3 inputLightPosition = Vec3(-0.3, 1.0, 0.4);
-int lightIsInCamSpace = 1;
+Vec3 inputLightPosition = Vec3(1.0,1.0,1.0);
+int lightIsInCamSpace = 0;
 float specular_intensity = 3.3;
 GLProgram *glProgram;
 char *gl_program_name = "Simple GL Program";
@@ -82,24 +82,30 @@ std::vector<Vec3> rays_intersection;
 Ray test_ray = Ray(Vec3(-1.0,0.,0.),Vec3(1.,-0.0,0.));
 
 void rayTraceFromCamera() {
-    unsigned int w = (unsigned int) glutGet(GLUT_WINDOW_WIDTH),
-		h = (unsigned int) glutGet(GLUT_WINDOW_HEIGHT);
-    std::cout << "Ray tracing a " << w << " x " << h << " image" << std::endl;
-    camera.apply();
-    Vec3 pos , dir;
-    std::vector< Vec3 > image( w*h , Vec3(0,0,0) );
-    for (int y=0; y<h; y++){
-        for (int x=0; x<w; x++) {
-            float u = ((float)(x) + (float)(rand())/(float)(RAND_MAX)) / w;
-            float v = ((float)(y) + (float)(rand())/(float)(RAND_MAX)) / h;
-            // this is a random uv that belongs to the pixel xy.
-            screenSpaceToWorldSpaceRay(u,v,pos,dir);
-            image[x + y*w] = scene.rayTrace( Ray(pos, dir), rays_intersection);
-        }
+  int AAsamples = 4;
+  unsigned int w = (unsigned int) glutGet(GLUT_WINDOW_WIDTH),
+	h = (unsigned int) glutGet(GLUT_WINDOW_HEIGHT);
+  std::cout << "Ray tracing a " << w << " x " << h << " image" << std::endl;
+  camera.apply();
+  Vec3 pos , dir;
+  std::vector< Vec3 > image( w*h , Vec3(0,0,0) );
+  for (int y=0; y<h; y++){
+    for (int x=0; x<w; x++) {
+      for (int aa=0; aa<AAsamples; aa++) {
+        srand(x+y*w+h*w*aa);
+        std::cout << "\r" << (((x + y*w)/(h*w))*100) << "%";
+        float u = ((float)(x) + (float)(rand())/(float)(RAND_MAX)) / w;
+        float v = ((float)(y) + (float)(rand())/(float)(RAND_MAX)) / h;
+        // this is a random uv that belongs to the pixel xy.
+        screenSpaceToWorldSpaceRay(u,v,pos,dir);
+        image[x + y*w] += scene.rayTrace( Ray(pos, dir), rays_intersection);
+      }
+      image[x + y*w] = image[x + y*w]/float(AAsamples);
     }
-
-    std::string filename = "./myImage.ppm";
-		PPMIO::write_ppm(image,filename,w,h);
+  }
+  std::cout << "\n" << "done: writing image." << " \n";
+  std::string filename = "./myImage.ppm";
+	PPMIO::write_ppm(image,filename,w,h);
 }
 
 void createCheckerBoardImage() {
@@ -174,8 +180,9 @@ void init () {
       glProgram = GLProgram::genVFProgram (gl_program_name,vertex_shader_path,fragment_shader_path);
       glProgram -> use();
       glProgram -> setUniform1i("lightIsInCamSpace", lightIsInCamSpace);
-      glProgram -> setUniform1f("specular_intensity", specular_intensity);
       glProgram -> setUniform3f("inputLightPosition", inputLightPosition[0],inputLightPosition[1],inputLightPosition[2]);
+      glProgram -> setUniform1f("specular_intensity", specular_intensity);
+
       glProgram -> stop();
     }
     catch(Exception & e) {
