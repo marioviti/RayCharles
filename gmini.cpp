@@ -63,7 +63,7 @@ static bool fullScreen = false;
 // -------------------------------------------
 Scene scene;
 
-Vec3 inputLightPosition = Vec3(1.0,1.0,-1.0);
+Vec3 inputLightPosition = Vec3(1.0,1.0,1.0);
 int lightIsInCamSpace = 0;
 float specular_intensity = 3.3;
 GLProgram *glProgram;
@@ -90,7 +90,7 @@ std::vector<Vec3> rays_intersection;
 Ray test_ray = Ray(Vec3(-1.0,0.,0.),Vec3(1.,-0.0,0.));
 
 void rayTraceFromCamera() {
-  int AAsamples = 5;
+  int AAsamples = 4;
   unsigned int w = (unsigned int) glutGet(GLUT_WINDOW_WIDTH),
 	h = (unsigned int) glutGet(GLUT_WINDOW_HEIGHT);
   std::cout << "Ray tracing a " << w << " x " << h << " image" << std::endl;
@@ -437,9 +437,9 @@ int main (int argc, char ** argv) {
     scene.add_light(inputLightPosition);
 		//scene.addSphere(0.4,Vec3(0.,0.,0.));
     int bind_index_texture = 0;
-    scene.addSphere_with_texture(0.5,Vec3(0.,0.,0.),texture_bind_index);
+    scene.addSphere_with_texture(0.6,Vec3(0.,0.,0.),texture_bind_index);
 		//scene.addCube(1.0,Vec3(0.,0.,0.));
-    scene.addSphere_with_texture(0.2,Vec3(-0.7,0.5,0.5),texture_bind_index);
+    scene.addSphere_with_mirror(0.4,Vec3(-0.7,0.5,0.5));
     scene.addQuad(Vec3(-10,-1,-10),Vec3(10,-1,-10),Vec3(-10,-1,10),Vec3(10,-1.0,10));
 
 		// RAY TRACER

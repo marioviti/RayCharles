@@ -123,6 +123,23 @@ Vec3 Scene::rayTraceRecursive(Ray const & ray, std::vector<Vec3>& rays_intersect
   // Intersecting an object
   if (result.objType == SCENE_OBJECT_TYPE_SPHERE or
     result.objType == SCENE_OBJECT_TYPE_MESH ) {
+
+    // DIFFUSE MIRROR
+    if (result.material.get_type() == MIRROR) {
+      Vec3 TINT;
+      TINT = result.material.get_tint(); //diffuse color
+      Vec3 L_color;
+      Vec3 p = result.intersection;
+      Vec3 n = result.normal;
+      // compute the reflacted ray from the intersection point p
+      // with normal n
+      Ray refl_ray = Ray::reflected_ray(ray.direction(),n,p);
+      return rayTraceRecursive(refl_ray,rays_intersections,depth-1);
+      //return theta_2 * Vec3::componentProduct(
+      //  solid_angle*L_color, rayTraceRecursive(refl_ray,rays_intersections,depth-1));
+
+    }
+
     // DIFFUSE BRDF
     if (result.material.get_type() == DIFFUSE_SPECULAR) {
 
@@ -177,7 +194,7 @@ Vec3 Scene::rayTraceRecursive(Ray const & ray, std::vector<Vec3>& rays_intersect
         }
       }
 
-      // BRDF part 2
+      // DIFFUSE BRDF part 2
       // Montecarlo sampling
       Ray random_ray = Ray(p,Vec3::random_in_emisphere(p,n,get_seed()),SCENE_RAY_OFFSET);
       Ray reflected_random_ray = Ray::reflected_ray(random_ray.direction(),n,p);
@@ -201,6 +218,13 @@ int Scene::add_texture(std::string & filename) {
   texture.load_texture(filename);
   textures.push_back(texture);
   return texture.get_bindIndex();
+}
+
+void Scene::addSphere_with_mirror(float _ray, Vec3 _center ) {
+  Sphere sphere = Sphere(_ray,_center);
+  sphere.buildMesh(15,15);
+  sphere.material.set_mirror();
+  spheres.push_back(sphere);
 }
 
 void Scene::addSphere_with_texture(float _ray, Vec3 _center ,int bind_index_texture) {

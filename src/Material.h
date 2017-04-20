@@ -4,6 +4,7 @@
 #define DIFFUSE 0
 #define SPECULAR 1
 #define DIFFUSE_SPECULAR 2
+#define MIRROR 3
 
 #include "Vec3.h"
 #include "Texture.h"
@@ -29,10 +30,15 @@ class Material {
     }
     bool has_texture() {return texturized;}
     void set_texture_index(int texture_bind_index_) { texture_bind_index = texture_bind_index_; texturized = true;}
+    void unset_texture() { texturized=false; }
     int get_texture_index() { return texture_bind_index; }
 
     bool is_mirror() { return mirror; }
-    void set_mirror() { tint=Vec3(0.,0.,0);  mirror=true; }
+    void set_mirror() { tint=Vec3(0.,0.,0);  mirror=true; type = MIRROR; }
+    void unset_mirror() { mirror=false; }
+
+    void set_tint(Vec3 _tint) { tint = _tint; }
+    Vec3 get_tint() { return tint; }
 
     void set_diffuse_color(Vec3 _color) { diffuse_color = _color; }
     Vec3 get_diffuse_color() { return diffuse_color; }

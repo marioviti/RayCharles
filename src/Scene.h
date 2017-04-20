@@ -63,6 +63,7 @@ public:
     // OBJECT ADD methods
     void addSphere(float _ray, Vec3 _center );
     void addSphere_with_texture(float _ray,  Vec3 _center, int bind_index_texture);
+    void addSphere_with_mirror(float _ray, Vec3 _center );
     void addCube(float _side, Vec3 _center );
     void addQuad(Vec3 c1, Vec3 c2, Vec3 c3, Vec3 c4);
     void addMesh(std::string const & modelFilename);
