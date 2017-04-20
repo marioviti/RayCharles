@@ -14,6 +14,7 @@
 uniform int lightIsInCamSpace;
 uniform vec3 inputLightPosition;
 uniform float specular_intensity;
+uniform int has_texture;
 
 const vec4 inputLightMaterial = vec4 (1.0, 1.0, 1.0 , 1.0); // white light
 
@@ -25,6 +26,7 @@ const float inputObjectShininess = 50.0;
 varying vec4 P; // Interpolated fragment-wise position
 varying vec3 N; // Interpolated fragment-wise normal
 varying vec4 C; // Interpolated fragment-wise color
+
 
 /*
 //TEXTURE
@@ -63,4 +65,6 @@ void main (void) {
 
     // ----------------------------------------
     gl_FragColor = color;
+    if(has_texture == 1) { gl_FragColor = inputObjectAmbientMaterial; }
+    // to test
 }

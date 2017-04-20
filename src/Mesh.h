@@ -26,11 +26,14 @@ struct MeshVertex {
     inline MeshVertex & operator = (const MeshVertex & v) {
         p = v.p;
         n = v.n;
+        coordU = v.coordU;
+        coordV = v.coordV;
         return (*this);
     }
     // membres :
     Vec3 p; // une position
     Vec3 n; // une normale
+    float coordU, coordV;
 };
 
 struct MeshTriangle {
@@ -49,7 +52,6 @@ struct MeshTriangle {
         return (*this);
     }
     // membres :
-
     unsigned int v[3];
 };
 
@@ -68,9 +70,11 @@ class Mesh:public Instance {
 
 public:
 
+    int bindindex;
+    int has_texture;
     // Material
     Material material;
-    Mesh() { material=Material::default_material(); }
+    Mesh() { material=Material::default_material(); has_texture=0; }
     void set_material(const Material & my_material) { material=my_material; }
     Material get_material() { return material; }
 
@@ -85,6 +89,9 @@ public:
     // vectors holding the cage settings
     std::vector<unsigned int> cageOrder;
     std::vector<Vec3> cageVertices;
+
+    void set_texture_index(int bindindex_) { material.set_texture_index(bindindex_); bindindex = bindindex_; has_texture=1; };
+    int get_texture_index() { return bindindex; };
 
     // Rendering routines
     RayMeshIntersection getIntersection(Ray const & ray);

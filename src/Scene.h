@@ -24,6 +24,7 @@ struct RaySceneIntersection {
   int objUniqueId;
   Material material;
   bool intersectionExists;
+  float u,v;
   float lambda;
   Vec3 intersection;
   Vec3 normal;
@@ -37,6 +38,7 @@ class Scene {
 
 private:
 
+    std::vector<Texture> textures;
     std::vector<Mesh> meshes;
     std::vector<Sphere> spheres;
     std::vector<Cube> cubes;
@@ -56,9 +58,11 @@ public:
     RaySceneIntersection getIntersection(Ray const & ray);
     Vec3 rayTrace(Ray const & ray,std::vector<Vec3>& rays_intersections);
     Vec3 rayTraceRecursive(Ray const & ray, std::vector<Vec3>& rays_intersections, int depth);
+    int add_texture(std::string & filename);
 
     // OBJECT ADD methods
     void addSphere(float _ray, Vec3 _center );
+    void addSphere_with_texture(float _ray,  Vec3 _center, int bind_index_texture);
     void addCube(float _side, Vec3 _center );
     void addQuad(Vec3 c1, Vec3 c2, Vec3 c3, Vec3 c4);
     void addMesh(std::string const & modelFilename);

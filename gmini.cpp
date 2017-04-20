@@ -37,7 +37,9 @@
 #include "src/matrixUtilities.h"
 
 #include "src/Instance.h"
+#include "src/Texture.h"
 int Instance::serial_id=0;
+int Texture::bind_index_gen=0;
 
 using namespace std;
 
@@ -61,13 +63,19 @@ static bool fullScreen = false;
 // -------------------------------------------
 Scene scene;
 
-Vec3 inputLightPosition = Vec3(1.0,1.0,1.0);
+Vec3 inputLightPosition = Vec3(1.0,1.0,-1.0);
 int lightIsInCamSpace = 0;
 float specular_intensity = 3.3;
 GLProgram *glProgram;
 char *gl_program_name = "Simple GL Program";
 char *vertex_shader_path = "./src/shader.vert";
 char *fragment_shader_path = "./src/specular_shader.frag";
+
+// -------------------------------------------
+// Textures index
+// -------------------------------------------
+
+int texture_bind_index;
 
 // -------------------------------------------
 // Texture Checkerboard
@@ -82,7 +90,7 @@ std::vector<Vec3> rays_intersection;
 Ray test_ray = Ray(Vec3(-1.0,0.,0.),Vec3(1.,-0.0,0.));
 
 void rayTraceFromCamera() {
-  int AAsamples = 4;
+  int AAsamples = 5;
   unsigned int w = (unsigned int) glutGet(GLUT_WINDOW_WIDTH),
 	h = (unsigned int) glutGet(GLUT_WINDOW_HEIGHT);
   std::cout << "Ray tracing a " << w << " x " << h << " image" << std::endl;
@@ -93,7 +101,7 @@ void rayTraceFromCamera() {
     for (int x=0; x<w; x++) {
       for (int aa=0; aa<AAsamples; aa++) {
         srand(x+y*w+h*w*aa);
-        std::cout << "\r" << (((x + y*w)/(h*w))*100) << "%";
+        std::cout << "\r" << int(((x + y*w)/float(h*w))*100) << "%";
         float u = ((float)(x) + (float)(rand())/(float)(RAND_MAX)) / w;
         float v = ((float)(y) + (float)(rand())/(float)(RAND_MAX)) / h;
         // this is a random uv that belongs to the pixel xy.
@@ -166,6 +174,12 @@ void initLight () {
 }
 
 void init () {
+
+
+    std::string filename = "./src/img/sphereTextures/s1.ppm";
+    texture_bind_index = scene.add_texture(filename);
+    //Gl program
+
     glewExperimental = GL_TRUE;
     glewInit();
     camera.resize (SCREENWIDTH, SCREENHEIGHT);
@@ -189,6 +203,7 @@ void init () {
       cerr << e.msg() << endl;
     }
     // bind the texture
+    /*
     createCheckerBoardImage();
     glEnable(GL_TEXTURE_2D);
     glGenTextures(1, &checkerBoardImageTextudeIdx);
@@ -200,6 +215,7 @@ void init () {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glDisable(GL_TEXTURE_2D);
+    */
 }
 
 
@@ -420,8 +436,10 @@ int main (int argc, char ** argv) {
     scene.addGLProgram(glProgram); //ADD ONE PER MESH!!!!!!
     scene.add_light(inputLightPosition);
 		//scene.addSphere(0.4,Vec3(0.,0.,0.));
-		scene.addCube(1.0,Vec3(0.,0.,0.));
-    scene.addSphere(0.2,Vec3(-0.8,0.5,1.0));
+    int bind_index_texture = 0;
+    scene.addSphere_with_texture(0.5,Vec3(0.,0.,0.),texture_bind_index);
+		//scene.addCube(1.0,Vec3(0.,0.,0.));
+    scene.addSphere_with_texture(0.2,Vec3(-0.7,0.5,0.5),texture_bind_index);
     scene.addQuad(Vec3(-10,-1,-10),Vec3(10,-1,-10),Vec3(-10,-1,10),Vec3(10,-1.0,10));
 
 		// RAY TRACER

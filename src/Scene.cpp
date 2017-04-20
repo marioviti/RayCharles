@@ -89,6 +89,8 @@ RaySceneIntersection Scene::getIntersection(Ray const & ray) {
         result.material = raySphereIntersection.material;
         result.objType = SCENE_OBJECT_TYPE_SPHERE;
         result.objUniqueId = spheres[mIt].get_unique_id();
+        result.u = raySphereIntersection.u;
+        result.v = raySphereIntersection.v;
       }
     }
   }
@@ -128,8 +130,11 @@ Vec3 Scene::rayTraceRecursive(Ray const & ray, std::vector<Vec3>& rays_intersect
       //std::cout << "intersection " << result.intersection << '\n';
       //std::cout << "lambda " << result.lambda << '\n';
       //std::cout << "normal " << result.normal << '\n';
-
-      Vec3 DC = result.material.get_diffuse_color(); //diffuse color
+      Vec3 DC;
+      DC = result.material.get_diffuse_color(); //diffuse color
+      if(result.material.has_texture()) {
+        DC = textures[result.material.get_texture_index()].evalue(result.u,result.v);
+      }
       Vec3 SC = result.material.get_specular_color(); //specular color
       float S = result.material.get_shininess(); //shininess
 
@@ -190,6 +195,21 @@ Vec3 Scene::rayTraceRecursive(Ray const & ray, std::vector<Vec3>& rays_intersect
   return color_value;
 }
 
+int Scene::add_texture(std::string & filename) {
+  //load Textures
+  Texture texture = Texture();
+  texture.load_texture(filename);
+  textures.push_back(texture);
+  return texture.get_bindIndex();
+}
+
+void Scene::addSphere_with_texture(float _ray, Vec3 _center ,int bind_index_texture) {
+  Sphere sphere = Sphere(_ray,_center);
+  sphere.buildMesh(15,15);
+  sphere.set_texture_index(bind_index_texture);
+  spheres.push_back(sphere);
+}
+
 void Scene::addSphere(float _ray, Vec3 _center ) {
   Sphere sphere = Sphere(_ray,_center);
   sphere.buildMesh(15,15);
@@ -234,6 +254,7 @@ void Scene::draw() const {
   for( unsigned int mIt = 0 ; mIt < meshes.size() ; ++mIt ) {
       Mesh const & mesh = meshes[mIt];
       gl_Program->use();
+      gl_Program -> setUniform1i("has_texture", mesh.has_texture);
       mesh.draw();
       gl_Program->stop();
       //mesh.drawCage();
@@ -248,12 +269,14 @@ void Scene::draw() const {
   for( unsigned int mIt = 0 ; mIt < cubes.size() ; ++mIt ) {
       Cube const & cube = cubes[mIt];
       gl_Program->use();
+      gl_Program -> setUniform1i("has_texture", cube.has_texture);
       cube.draw();
       gl_Program->stop();
   }
   for( unsigned int mIt = 0 ; mIt < spheres.size() ; ++mIt ) {
       Sphere const & sphere = spheres[mIt];
       gl_Program->use();
+      gl_Program -> setUniform1i("has_texture", sphere.has_texture);
       sphere.draw();
       gl_Program->stop();
       //sphere.drawCage();

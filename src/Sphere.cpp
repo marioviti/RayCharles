@@ -25,6 +25,8 @@ float Sphere::solid_angle(Vec3 const & p) {
 void Sphere::buildMesh(int N, int M) {
   if(N%2==0) N++;
   if(M%2==0) M++;
+  meridians = N;
+  paralles = M;
   V.resize(N*M);
   float u,v,theta,phi,x,y,z;
   Vec3 p;
@@ -33,13 +35,6 @@ void Sphere::buildMesh(int N, int M) {
     for (unsigned int j=0; j<M; ++j) {
       u = float(i)/(N-1);
       v = float(j)/(M-1);
-      /*
-      theta = u*2*PI;
-      phi = -PI/2 + v*PI;
-      x = std::cos(phi)*std::cos(theta);
-      y = std::cos(phi)*std::sin(theta);
-      z = std::sin(phi);
-      */
       theta = u*2*PI;
       phi = v*2*PI;
       x = std::sin(phi)*std::sin(theta);
@@ -49,6 +44,8 @@ void Sphere::buildMesh(int N, int M) {
       p = centre + (sphere_ray*n);
       V[i+j*N].p = p;
       V[i+j*N].n = n;
+      V[i+j*N].coordU = u;
+      V[i+j*N].coordV = v;
     }
   }
   unsigned int ind0,ind1,ind2,ind3;
@@ -66,6 +63,22 @@ void Sphere::buildMesh(int N, int M) {
   buildArray();
 }
 
+Vec2 Sphere::calculate_uv(Vec3 const n) const {
+  // from local normal vector
+  //phi,theta -> u,v = [0-Pi,0-Pi] -> [0-1,0-1]
+  float phi,theta,u,v;
+  // if negative z the cosine is the same(y)
+  // but the angle is the complement to 2Pi
+  phi = acos(n[1]);
+  theta = atan2(n[0],n[2]);
+
+  u = theta/(2*PI);
+  if (u<0.f) {u+=1.f;}
+  v = phi/PI;
+  Vec2 uv = Vec2(u,v);
+  return uv;
+}
+
 RaySphereIntersection Sphere::getIntersection( Ray const & ray ) const {
   RaySphereIntersection res;
   res.intersectionExists = false;
@@ -81,6 +94,12 @@ RaySphereIntersection Sphere::getIntersection( Ray const & ray ) const {
       res.intersection = ray.origin() + eps_Min*ray.direction();
       res.normal = (res.intersection-centre);
       res.normal.normalize();
+      if (has_texture == 1) {
+        Vec2 uv = calculate_uv(res.normal);
+        res.u = uv[0];
+        res.v = uv[1];
+        //std::cout << "  " << uv[0] << ", "<< uv[1] << '\n';
+      }
     }
     else if (eps_Max >=0){
       res.intersectionExists = true,
@@ -88,6 +107,12 @@ RaySphereIntersection Sphere::getIntersection( Ray const & ray ) const {
       res.intersection = ray.origin() + eps_Max*ray.direction();
       res.normal = (centre-res.intersection);
       res.normal.normalize();
+      if (has_texture == 1) {
+        Vec2 uv = calculate_uv(res.normal);
+        res.u = uv[0];
+        res.v = uv[1];
+        //std::cout << "  " << uv[0] << ", "<< uv[1] << '\n';
+      }
     }
   }
   res.material = this->material;
