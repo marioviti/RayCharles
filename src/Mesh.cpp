@@ -82,12 +82,38 @@ void Mesh::drawCage() const {
   glEnable(GL_LIGHTING);
 }
 
+/*
 void Mesh::draw() const {
   glEnableClientState(GL_VERTEX_ARRAY);
   glEnableClientState(GL_NORMAL_ARRAY);
   glVertexPointer(3, GL_FLOAT, 3*sizeof(float),(GLvoid*)(&vertices[0]));
   glNormalPointer(GL_FLOAT, 3*sizeof(float),(GLvoid*)(&normals[0]));
   glDrawElements(GL_TRIANGLES,triangles.size(),GL_UNSIGNED_INT,(GLvoid*)(&triangles[0]));
+}*/
+
+void Mesh::draw() const {
+    // This code is deprecated.
+    glBegin (GL_TRIANGLES);
+    for (unsigned int i = 0; i < T.size (); i++)
+      for (unsigned int j = 0; j < 3; j++) {
+        const MeshVertex & v = V[T[i].v[j]];
+        glNormal3f (v.n[0], v.n[1], v.n[2]);
+        glVertex3f (v.p[0], v.p[1], v.p[2]);
+      }
+    glEnd ();
+}
+
+void Mesh::drawWithTexture() const {
+    // This code is deprecated.
+    glBegin (GL_TRIANGLES);
+    for (unsigned int i = 0; i < T.size (); i++)
+      for (unsigned int j = 0; j < 3; j++) {
+        const MeshVertex & vertex = V[T[i].v[j]];
+        glTexCoord2f(UVs[T[i].v[j]][0] , UVs[T[i].v[j]][1] );
+        glNormal3f (vertex.n[0], vertex.n[1], vertex.n[2]);
+        glVertex3f (vertex.p[0], vertex.p[1], vertex.p[2]);
+      }
+    glEnd ();
 }
 
 void Mesh::loadOFF (const std::string & filename) {

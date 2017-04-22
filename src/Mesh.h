@@ -5,6 +5,7 @@
 #include <string>
 #include "Instance.h"
 #include "Vec3.h"
+#include "Vec2.h"
 #include "Ray.h"
 #include "Triangle.h"
 #include "Material.h"
@@ -31,9 +32,10 @@ struct MeshVertex {
         return (*this);
     }
     // membres :
+    float coordU, coordV;
     Vec3 p; // une position
     Vec3 n; // une normale
-    float coordU, coordV;
+
 };
 
 struct MeshTriangle {
@@ -85,6 +87,7 @@ public:
     std::vector<unsigned int> triangles;
     std::vector<Vec3> vertices;
     std::vector<Vec3> normals;
+    std::vector<Vec2> UVs;
 
     // vectors holding the cage settings
     std::vector<unsigned int> cageOrder;
@@ -106,6 +109,7 @@ public:
     void buildArray();
     void build_cage();
     void draw() const;
+    void drawWithTexture() const;
     void drawCage() const;
 };
 

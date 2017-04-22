@@ -28,15 +28,18 @@ void Sphere::buildMesh(int N, int M) {
   meridians = N;
   paralles = M;
   V.resize(N*M);
+  UVs.resize(N*M);
   float u,v,theta,phi,x,y,z;
   Vec3 p;
   Vec3 n;
   for (unsigned int i=0; i<N; ++i) {
     for (unsigned int j=0; j<M; ++j) {
-      u = float(i)/(N-1);
-      v = float(j)/(M-1);
-      theta = u*2*PI;
-      phi = v*2*PI;
+      u = (i)/float(N-1);
+      v = (j)/float(M-1);
+      UVs[i+j*N][0] = u;
+      UVs[i+j*N][1] = 1-v;
+      theta = u*2*PI - PI;
+      phi = v*PI - PI;
       x = std::sin(phi)*std::sin(theta);
       y = std::cos(phi);
       z = std::sin(phi)*std::cos(theta);
@@ -44,8 +47,7 @@ void Sphere::buildMesh(int N, int M) {
       p = centre + (sphere_ray*n);
       V[i+j*N].p = p;
       V[i+j*N].n = n;
-      V[i+j*N].coordU = u;
-      V[i+j*N].coordV = v;
+
     }
   }
   unsigned int ind0,ind1,ind2,ind3;

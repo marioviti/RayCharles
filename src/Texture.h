@@ -21,6 +21,7 @@ class Texture {
     int static bind_index_gen;
     Vec3 evalue(float u, float v); // will return the pixel value from u,v coords
     void load_texture(std::string& filename);
-    int get_bindIndex() {return bindIndex;};
+    int get_bindIndex() const {return bindIndex;};
+    GLuint get_handleIndex() const {return handleIndex;};
 };
 #endif

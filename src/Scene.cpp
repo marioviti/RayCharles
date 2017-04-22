@@ -279,7 +279,18 @@ void Scene::draw() const {
       Mesh const & mesh = meshes[mIt];
       gl_Program->use();
       gl_Program -> setUniform1i("has_texture", mesh.has_texture);
-      mesh.draw();
+      if (mesh.has_texture == 1) {
+        gl_Program->setUniform1i("uTextureColor", textures[mesh.bindindex].get_bindIndex());
+        glEnable(GL_LIGHTING);
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D , textures[mesh.bindindex].get_handleIndex());
+        glDisable(GL_LIGHTING);
+        glColor3f(1.,1.,1.);
+        mesh.drawWithTexture();
+        glDisable(GL_TEXTURE_2D);
+      }
+      else
+        mesh.draw();
       gl_Program->stop();
       //mesh.drawCage();
       /*
@@ -301,7 +312,20 @@ void Scene::draw() const {
       Sphere const & sphere = spheres[mIt];
       gl_Program->use();
       gl_Program -> setUniform1i("has_texture", sphere.has_texture);
-      sphere.draw();
+
+
+      if (sphere.has_texture == 1) {
+        gl_Program->setUniform1i("uTextureColor", textures[sphere.bindindex].get_bindIndex());
+        glEnable(GL_LIGHTING);
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D , textures[sphere.bindindex].get_handleIndex());
+        glDisable(GL_LIGHTING);
+        glColor3f(1.,1.,1.);
+        sphere.drawWithTexture();
+        glDisable(GL_TEXTURE_2D);
+      }
+      else
+        sphere.draw();
       gl_Program->stop();
       //sphere.drawCage();
       /*

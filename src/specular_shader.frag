@@ -28,17 +28,22 @@ varying vec3 N; // Interpolated fragment-wise normal
 varying vec4 C; // Interpolated fragment-wise color
 
 
-/*
+
 //TEXTURE
-uniform sampler2D myTexture;
-varying vec2 vTexCoord;
-*/
+uniform sampler2D uTextureColor;
 
 void main (void) {
-    /*
+
     //TEXTURE
-    vec4 texture_color = texture2D(myTexture,vTexCoord).rgba;
-    */
+    vec4 texture_color;
+    vec2 fragUV;
+    vec4 color1;
+
+    if(has_texture == 1) {
+      fragUV = gl_TexCoord[0].xy;
+      color1 = texture2D(uTextureColor,fragUV);
+    }
+
     // PUT EVERY QUANTITY IN CAMERA SPACE!
     vec4 PModelview = gl_ModelViewMatrix * P;
     vec3 position = vec3 (PModelview.xyz / PModelview.w);
@@ -65,6 +70,6 @@ void main (void) {
 
     // ----------------------------------------
     gl_FragColor = color;
-    if(has_texture == 1) { gl_FragColor = inputObjectAmbientMaterial; }
+    if(has_texture == 1) { gl_FragColor = color1; }
     // to test
 }
