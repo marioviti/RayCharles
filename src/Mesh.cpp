@@ -82,15 +82,26 @@ void Mesh::drawCage() const {
   glEnable(GL_LIGHTING);
 }
 
-/*
+
 void Mesh::draw() const {
   glEnableClientState(GL_VERTEX_ARRAY);
   glEnableClientState(GL_NORMAL_ARRAY);
   glVertexPointer(3, GL_FLOAT, 3*sizeof(float),(GLvoid*)(&vertices[0]));
   glNormalPointer(GL_FLOAT, 3*sizeof(float),(GLvoid*)(&normals[0]));
   glDrawElements(GL_TRIANGLES,triangles.size(),GL_UNSIGNED_INT,(GLvoid*)(&triangles[0]));
-}*/
+}
 
+void Mesh::drawWithTexture() const {
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glEnableClientState(GL_NORMAL_ARRAY);
+  glEnableClientState (GL_TEXTURE_COORD_ARRAY);
+  glVertexPointer(3, GL_FLOAT, 3*sizeof(float),(GLvoid*)(&vertices[0]));
+  glNormalPointer(GL_FLOAT, 3*sizeof(float),(GLvoid*)(&normals[0]));
+  glTexCoordPointer (2, GL_FLOAT, 2*sizeof (float), (GLvoid*)(&UVs[0]));
+  glDrawElements(GL_TRIANGLES,triangles.size(),GL_UNSIGNED_INT,(GLvoid*)(&triangles[0]));
+}
+
+/*
 void Mesh::draw() const {
     // This code is deprecated.
     glBegin (GL_TRIANGLES);
@@ -115,6 +126,7 @@ void Mesh::drawWithTexture() const {
       }
     glEnd ();
 }
+*/
 
 void Mesh::loadOFF (const std::string & filename) {
     std::ifstream in (filename.c_str ());

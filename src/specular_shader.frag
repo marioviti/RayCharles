@@ -70,6 +70,6 @@ void main (void) {
 
     // ----------------------------------------
     gl_FragColor = color;
-    if(has_texture == 1) { gl_FragColor = color1; }
+    if(has_texture == 1) { gl_FragColor = theta*color1 + inputObjectSpecularMaterial*sigma; }
     // to test
 }

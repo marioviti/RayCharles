@@ -13,7 +13,10 @@ Vec3 Texture::evalue(float u, float v) {
   pu = u*w; pv = v*h;
   nu = int(floor(pu)); nv = int(floor(pv));
   du = pu-nu-0.5; dv = pv-nv-0.5;
-
+  r = imageTexture[3*(nu +w*nv)+0];
+  g = imageTexture[3*(nu +w*(nv))+1];
+  b = imageTexture[3*(nu +w*(nv))+2];
+  return Vec3(r/255.f,g/255.f,b/255.f);
   // Linear interpolation
   r = (1-du)*(1-dv)*imageTexture[3*(nu +w*nv)+0];
   r += (1-du)*dv*imageTexture[3*(nu +w*(nv+1))+0];

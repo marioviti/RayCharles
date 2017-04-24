@@ -124,6 +124,25 @@ Vec3 Scene::rayTraceRecursive(Ray const & ray, std::vector<Vec3>& rays_intersect
   if (result.objType == SCENE_OBJECT_TYPE_SPHERE or
     result.objType == SCENE_OBJECT_TYPE_MESH ) {
 
+    // TRANSPARENT MATERIAL
+    if (result.material.get_type() == TRANSPARENT) {
+      Vec3 n = result.normal;
+      Vec3 p = result.intersection;
+      float ior = result.material.get_index_of_refraction();
+      if (ray.is_refracted()) {
+        ior = 1/ior;
+      }
+      float alpha = result.material.get_alpha_mix();
+      Ray refracted_ray =  Ray::refracted_ray(p,ray.direction(),n,ior,SCENE_RAY_OFFSET);
+      Ray refl_ray = Ray::reflected_ray(ray.direction(),n,p);
+      if (ray.is_refracted()) {
+        refracted_ray.refracted = false;
+      }
+      Vec3 color_refracted = rayTraceRecursive(refracted_ray,rays_intersections,depth-1);
+      Vec3 color_reflected = rayTraceRecursive(refl_ray,rays_intersections,depth-1);
+      return alpha*color_refracted + (1-alpha)*color_reflected;
+    }
+
     // DIFFUSE MIRROR
     if (result.material.get_type() == MIRROR) {
       Vec3 TINT;
@@ -137,7 +156,6 @@ Vec3 Scene::rayTraceRecursive(Ray const & ray, std::vector<Vec3>& rays_intersect
       return rayTraceRecursive(refl_ray,rays_intersections,depth-1);
       //return theta_2 * Vec3::componentProduct(
       //  solid_angle*L_color, rayTraceRecursive(refl_ray,rays_intersections,depth-1));
-
     }
 
     // DIFFUSE BRDF
@@ -190,6 +208,12 @@ Vec3 Scene::rayTraceRecursive(Ray const & ray, std::vector<Vec3>& rays_intersect
                 L_color // Light color
               );
             }
+            else {
+              // caustics on diffuse materials
+              if (result.material.get_type()==TRANSPARENT) {
+                return rayTraceRecursive(l_ray,rays_intersections,depth-1);
+              }
+            }
           }
         }
       }
@@ -224,6 +248,13 @@ void Scene::addSphere_with_mirror(float _ray, Vec3 _center ) {
   Sphere sphere = Sphere(_ray,_center);
   sphere.buildMesh(15,15);
   sphere.material.set_mirror();
+  spheres.push_back(sphere);
+}
+
+void Scene::addSphere_with_transparecy(float _ray, Vec3 _center ) {
+  Sphere sphere = Sphere(_ray,_center);
+  sphere.buildMesh(15,15);
+  sphere.material.set_tranparent();
   spheres.push_back(sphere);
 }
 

@@ -63,7 +63,7 @@ static bool fullScreen = false;
 // -------------------------------------------
 Scene scene;
 
-Vec3 inputLightPosition = Vec3(1.0,1.0,1.0);
+Vec3 inputLightPosition = Vec3(0.0,1.0,0);
 int lightIsInCamSpace = 0;
 float specular_intensity = 3.3;
 GLProgram *glProgram;
@@ -176,7 +176,7 @@ void initLight () {
 void init () {
 
 
-    std::string filename = "./src/img/sphereTextures/s1.ppm";
+    std::string filename = "./src/img/sphereTextures/s2.ppm";
     texture_bind_index = scene.add_texture(filename);
     //Gl program
 
@@ -432,14 +432,16 @@ int main (int argc, char ** argv) {
     glutMotionFunc (motion);
     glutMouseFunc (mouse);
     key ('?', 0, 0);
-    //scene.addMesh (argc == 2 ? argv[1] : "models/monkey.off");
-    scene.addGLProgram(glProgram); //ADD ONE PER MESH!!!!!!
+    scene.addGLProgram(glProgram);
     scene.add_light(inputLightPosition);
+    //scene.addMesh (argc == 2 ? argv[1] : "models/monkey.off");
+
 		//scene.addSphere(0.4,Vec3(0.,0.,0.));
     int bind_index_texture = 0;
-    scene.addSphere_with_texture(0.6,Vec3(0.,0.,0.),texture_bind_index);
+    //scene.addSphere_with_texture(0.6,Vec3(0.,0.,0.),texture_bind_index);
 		//scene.addCube(1.0,Vec3(0.,0.,0.));
-    scene.addSphere_with_mirror(0.4,Vec3(-0.7,0.5,0.5));
+    //scene.addSphere_with_transparecy(0.4,Vec3(-0.7,0.5,0.5));
+    scene.addSphere_with_transparecy(0.6,Vec3(0.0,0.0,0.0));
     scene.addQuad(Vec3(-10,-1,-10),Vec3(10,-1,-10),Vec3(-10,-1,10),Vec3(10,-1.0,10));
 
 		// RAY TRACER

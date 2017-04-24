@@ -35,7 +35,7 @@ class Light:public Instance {
       type = SPHERIC;
       ligth_sphere = Sphere(0.1,position_);
       position=ligth_sphere.centre;
-      color=Vec3(1.,1.,1.);
+      color=Vec3(1.,0.8,0.7);
     }
 
     void init_seed() {
