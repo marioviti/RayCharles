@@ -36,6 +36,8 @@
 
 #include "src/matrixUtilities.h"
 
+#include "src/Material.h"
+
 #include "src/Instance.h"
 #include "src/Texture.h"
 int Instance::serial_id=0;
@@ -58,24 +60,46 @@ static int lastX=0, lastY=0, lastZoom=0;
 static unsigned int FPS = 0;
 static bool fullScreen = false;
 
+
+// -------------------------------------------
+// Render Parametes.
+// -------------------------------------------
+
+int AAsamples = 8;
+
+// -------------------------------------------
+// Scene Parametes.
+// -------------------------------------------
+
+Scene scene;
+Vec3 inputLightPosition = Vec3(0.0,1.5,0.0);
+Vec3 light_color = Vec3(1.0,1.0,1.0);
+Vec3 ambient_color = Vec3(0.1,0.2,0.6);;
+
 // -------------------------------------------
 // Shaders Parametes.
 // -------------------------------------------
-Scene scene;
 
-Vec3 inputLightPosition = Vec3(0.0,1.0,0);
 int lightIsInCamSpace = 0;
-float specular_intensity = 3.3;
 GLProgram *glProgram;
 char *gl_program_name = "Simple GL Program";
 char *vertex_shader_path = "./src/shader.vert";
 char *fragment_shader_path = "./src/specular_shader.frag";
 
 // -------------------------------------------
-// Textures index
+// Default Material Parameters // also passed to the shader
+// -------------------------------------------
+
+float specular_intensity = 4.0;
+Vec3 diffuse_color = Vec3(0.3,0.4,0.5);
+Vec3 specular_color = Vec3(1.0,1.0,1.0);
+
+// -------------------------------------------
+// Textures Parameters
 // -------------------------------------------
 
 int texture_bind_index;
+std::string texture_filename = "./src/img/sphereTextures/s1.ppm";
 
 // -------------------------------------------
 // Texture Checkerboard
@@ -89,8 +113,27 @@ GLuint colorTexture_binding_Index;
 std::vector<Vec3> rays_intersection;
 Ray test_ray = Ray(Vec3(-1.0,0.,0.),Vec3(1.,-0.0,0.));
 
+void setup_scene() {
+  scene.add_light(inputLightPosition);
+  //scene.addMesh (argc == 2 ? argv[1] : "models/monkey.off");
+
+  //scene.addSphere(0.4,Vec3(1.,0.5,0.));
+  //scene.addSphere_with_texture(0.6,Vec3(0.,0.,0.),texture_bind_index);
+  //scene.addCube(1.0,Vec3(0.,0.,0.));
+  //scene.addSphere_with_transparecy(0.4,Vec3(-0.7,0.5,0.5));
+  //scene.addSphere(0.7,Vec3(0.0,0.0,-1.1));
+  Material default_material = Material();
+  default_material.set_type(DIFFUSE_SPECULAR);
+  default_material.set_diffuse_color(diffuse_color);
+  default_material.set_specular_color(specular_color);
+  default_material.set_shininess(specular_intensity);
+
+  scene.addSphere_with_transparecy(0.5,Vec3(0.0,0.0,0.0));
+  scene.addQuad(Vec3(-10,-1,-10),Vec3(10,-1,-10),Vec3(-10,-1,10),Vec3(10,-1.0,10));
+
+}
+
 void rayTraceFromCamera() {
-  int AAsamples = 4;
   unsigned int w = (unsigned int) glutGet(GLUT_WINDOW_WIDTH),
 	h = (unsigned int) glutGet(GLUT_WINDOW_HEIGHT);
   std::cout << "Ray tracing a " << w << " x " << h << " image" << std::endl;
@@ -175,9 +218,7 @@ void initLight () {
 
 void init () {
 
-
-    std::string filename = "./src/img/sphereTextures/s2.ppm";
-    texture_bind_index = scene.add_texture(filename);
+    texture_bind_index = scene.add_texture(texture_filename);
     //Gl program
 
     glewExperimental = GL_TRUE;
@@ -188,12 +229,16 @@ void init () {
     glEnable (GL_CULL_FACE);
     glDepthFunc (GL_LESS);
     glEnable (GL_DEPTH_TEST);
-    glClearColor (0.2f, 0.2f, 0.3f, 1.0f);
+    glClearColor (ambient_color[0],ambient_color[1],ambient_color[2], 1.0f);
 
     try {
       glProgram = GLProgram::genVFProgram (gl_program_name,vertex_shader_path,fragment_shader_path);
       glProgram -> use();
       glProgram -> setUniform1i("lightIsInCamSpace", lightIsInCamSpace);
+      glProgram -> setUniform3f("diffuse_color", diffuse_color[0],diffuse_color[1],diffuse_color[2]);
+      glProgram -> setUniform3f("specular_color", specular_color[0],specular_color[1],specular_color[2]);
+      glProgram -> setUniform3f("ambient_color", ambient_color[0],ambient_color[1],ambient_color[2]);
+      glProgram -> setUniform3f("light_color", light_color[0],light_color[1],light_color[2]);
       glProgram -> setUniform3f("inputLightPosition", inputLightPosition[0],inputLightPosition[1],inputLightPosition[2]);
       glProgram -> setUniform1f("specular_intensity", specular_intensity);
 
@@ -424,6 +469,7 @@ int main (int argc, char ** argv) {
     glutInitWindowSize (SCREENWIDTH, SCREENHEIGHT);
     window = glutCreateWindow ("gMini");
 
+    setup_scene();
     init ();
     glutIdleFunc (idle);
     glutDisplayFunc (display);
@@ -433,21 +479,6 @@ int main (int argc, char ** argv) {
     glutMouseFunc (mouse);
     key ('?', 0, 0);
     scene.addGLProgram(glProgram);
-    scene.add_light(inputLightPosition);
-    //scene.addMesh (argc == 2 ? argv[1] : "models/monkey.off");
-
-		//scene.addSphere(0.4,Vec3(0.,0.,0.));
-    int bind_index_texture = 0;
-    //scene.addSphere_with_texture(0.6,Vec3(0.,0.,0.),texture_bind_index);
-		//scene.addCube(1.0,Vec3(0.,0.,0.));
-    //scene.addSphere_with_transparecy(0.4,Vec3(-0.7,0.5,0.5));
-    scene.addSphere_with_transparecy(0.6,Vec3(0.0,0.0,0.0));
-    scene.addQuad(Vec3(-10,-1,-10),Vec3(10,-1,-10),Vec3(-10,-1,10),Vec3(10,-1.0,10));
-
-		// RAY TRACER
-
-		//rayTraceFromCamera();
-    //scene.rayTrace(test_ray,rays_intersection);
 
     glutMainLoop ();
     return EXIT_SUCCESS;

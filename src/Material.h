@@ -33,6 +33,7 @@ class Material {
         texturized = false;
         mirror=false;
     }
+
     bool has_texture() {return texturized;}
     void set_texture_index(int texture_bind_index_) { texture_bind_index = texture_bind_index_; texturized = true;}
     void unset_texture() { texturized=false; }
@@ -42,8 +43,8 @@ class Material {
     void set_mirror() { tint=Vec3(0.,0.,0);  mirror=true; type = MIRROR; }
     void unset_mirror() { mirror=false; }
 
-    void set_tranparent() { alpha_mix=0.75; index_of_refraction=1.1; type = TRANSPARENT; }
-    void set_tranparent(float ior) { index_of_refraction=ior; alpha_mix=0.75; type = TRANSPARENT; }
+    void set_tranparent() { alpha_mix=0.85; index_of_refraction=1.1; type = TRANSPARENT; }
+    void set_tranparent(float ior) { index_of_refraction=ior; alpha_mix=0.5; type = TRANSPARENT; }
     void set_tranparent(float ior, float alpha) { index_of_refraction=ior; alpha_mix=alpha; type = TRANSPARENT; }
     float get_index_of_refraction() { return index_of_refraction; }
     float get_alpha_mix() { return alpha_mix; }

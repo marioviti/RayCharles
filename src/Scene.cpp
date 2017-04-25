@@ -129,18 +129,19 @@ Vec3 Scene::rayTraceRecursive(Ray const & ray, std::vector<Vec3>& rays_intersect
       Vec3 n = result.normal;
       Vec3 p = result.intersection;
       float ior = result.material.get_index_of_refraction();
-      if (ray.is_refracted()) {
-        ior = 1/ior;
-      }
+      float normal_sign = 1;
+      if (ray.is_refracted()) { ior = 1/ior; normal_sign = -1;}
       float alpha = result.material.get_alpha_mix();
-      Ray refracted_ray =  Ray::refracted_ray(p,ray.direction(),n,ior,SCENE_RAY_OFFSET);
+      Ray refracted_ray =  Ray::refracted_ray(p,ray.direction(),normal_sign*n,ior,SCENE_RAY_OFFSET);
+
       Ray refl_ray = Ray::reflected_ray(ray.direction(),n,p);
-      if (ray.is_refracted()) {
+
+      if (ray.is_refracted())
         refracted_ray.refracted = false;
-      }
+
       Vec3 color_refracted = rayTraceRecursive(refracted_ray,rays_intersections,depth-1);
       Vec3 color_reflected = rayTraceRecursive(refl_ray,rays_intersections,depth-1);
-      return alpha*color_refracted + (1-alpha)*color_reflected;
+      color_value = alpha*color_refracted + (1-alpha)*color_reflected;
     }
 
     // DIFFUSE MIRROR
@@ -153,12 +154,12 @@ Vec3 Scene::rayTraceRecursive(Ray const & ray, std::vector<Vec3>& rays_intersect
       // compute the reflacted ray from the intersection point p
       // with normal n
       Ray refl_ray = Ray::reflected_ray(ray.direction(),n,p);
-      return rayTraceRecursive(refl_ray,rays_intersections,depth-1);
+      color_value = rayTraceRecursive(refl_ray,rays_intersections,depth-1);
       //return theta_2 * Vec3::componentProduct(
       //  solid_angle*L_color, rayTraceRecursive(refl_ray,rays_intersections,depth-1));
     }
 
-    // DIFFUSE BRDF
+    // DIFFUSE SPECULAR BRDF
     if (result.material.get_type() == DIFFUSE_SPECULAR) {
 
       //std::cout << '\n' << "intersection in BRDF" << '\n';
@@ -207,26 +208,20 @@ Vec3 Scene::rayTraceRecursive(Ray const & ray, std::vector<Vec3>& rays_intersect
                 theta_1*DC + SC*std::pow(theta_2,S), // DIFFUSE + SPECULAR
                 L_color // Light color
               );
-            }
-            else {
-              // caustics on diffuse materials
-              if (result.material.get_type()==TRANSPARENT) {
-                return rayTraceRecursive(l_ray,rays_intersections,depth-1);
-              }
-            }
+            }  
           }
         }
+
       }
 
-      // DIFFUSE BRDF part 2
+      // DIFFUSE SPECULAR BRDF part 2
       // Montecarlo sampling
       Ray random_ray = Ray(p,Vec3::random_in_emisphere(p,n,get_seed()),SCENE_RAY_OFFSET);
       Ray reflected_random_ray = Ray::reflected_ray(random_ray.direction(),n,p);
-      float solid_angle = 1.f;
       float sigma_1 = Vec3::dot(n,random_ray.direction());
       float sigma_2 = std::max(0.f,Vec3::dot(reflected_random_ray.direction(),-1*ray.direction()));
-      color_value += solid_angle * Vec3::componentProduct(
-        sigma_1*DC + SC*std::pow(sigma_2,S),
+      color_value += Vec3::componentProduct(
+        sigma_1*DC + std::pow(sigma_2,S)*SC,
         rayTraceRecursive(random_ray,rays_intersections,depth-1)
       );
       return color_value;

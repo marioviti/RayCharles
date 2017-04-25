@@ -12,22 +12,22 @@
 // the GLProgram methods.
 
 uniform int lightIsInCamSpace;
+uniform vec3 diffuse_color;
+uniform vec3 ambient_color;
+uniform vec3 specular_color;
+uniform vec3 light_color;
 uniform vec3 inputLightPosition;
 uniform float specular_intensity;
 uniform int has_texture;
 
-const vec4 inputLightMaterial = vec4 (1.0, 1.0, 1.0 , 1.0); // white light
-
-const vec4 inputObjectAmbientMaterial = vec4 (0.1, 0.2, 0.1 , 1.0); // green-ish
-const vec4 inputObjectDiffuseMaterial = vec4 (0.3, 0.3, 0.4 , 1.0); // blue-ish
-const vec4 inputObjectSpecularMaterial = vec4 (1.0, 1.0, 1.0 , 1.0); // white
-const float inputObjectShininess = 50.0;
+vec4 inputLightMaterial = vec4 (light_color.xyz , 1.0);
+vec4 inputObjectAmbientMaterial = vec4 (ambient_color.xyz , 1.0);
+vec4 inputObjectDiffuseMaterial = vec4 (diffuse_color.xyz, 1.0);
+vec4 inputObjectSpecularMaterial = vec4 (specular_color.xyz, 1.0);
 
 varying vec4 P; // Interpolated fragment-wise position
 varying vec3 N; // Interpolated fragment-wise normal
 varying vec4 C; // Interpolated fragment-wise color
-
-
 
 //TEXTURE
 uniform sampler2D uTextureColor;
@@ -38,11 +38,6 @@ void main (void) {
     vec4 texture_color;
     vec2 fragUV;
     vec4 color1;
-
-    if(has_texture == 1) {
-      fragUV = gl_TexCoord[0].xy;
-      color1 = texture2D(uTextureColor,fragUV);
-    }
 
     // PUT EVERY QUANTITY IN CAMERA SPACE!
     vec4 PModelview = gl_ModelViewMatrix * P;
@@ -65,11 +60,14 @@ void main (void) {
     vec4 color;
     theta = max(0,dot(normal,directionToLight));
     sigma = pow(max(0,dot(reflectedRayDirection,directionToCamera)),specular_intensity);
-    color = inputObjectAmbientMaterial + inputObjectDiffuseMaterial*theta + inputObjectSpecularMaterial*sigma;
-    color *= inputLightMaterial * C;
+    if(has_texture == 1) {
+      fragUV = gl_TexCoord[0].xy;
+      color1 = texture2D(uTextureColor,fragUV);
+      color = C * inputLightMaterial * (inputObjectAmbientMaterial + color1*theta) + inputObjectSpecularMaterial*sigma;
+    }
+    else
+      color = C * inputLightMaterial * (inputObjectAmbientMaterial + inputObjectDiffuseMaterial*theta) + inputObjectSpecularMaterial*sigma;
 
     // ----------------------------------------
     gl_FragColor = color;
-    if(has_texture == 1) { gl_FragColor = theta*color1 + inputObjectSpecularMaterial*sigma; }
-    // to test
 }
