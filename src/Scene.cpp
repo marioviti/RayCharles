@@ -103,8 +103,9 @@ Vec3 Scene::rayTrace(Ray const & ray,std::vector<Vec3>& rays_intersections) {
   return color_value;
 }
 
-Vec3 Scene::rayTraceRecursive(Ray const & ray, std::vector<Vec3>& rays_intersections, int depth) {
+Vec3 Scene::rayTraceRecursive(Ray const & origin_ray, std::vector<Vec3>& rays_intersections, int depth) {
   // initialize color to black
+  Ray ray = Ray(origin_ray.origin(), origin_ray.direction(), SCENE_RAY_OFFSET);
   Vec3 color_value = Vec3(0.,0.,0.);
   // at the end of the recursion, no contribution send back no light
   if (depth == 0) { return color_value; }
@@ -132,7 +133,7 @@ Vec3 Scene::rayTraceRecursive(Ray const & ray, std::vector<Vec3>& rays_intersect
       float normal_sign = 1;
       if (ray.is_refracted()) { ior = 1/ior; normal_sign = -1;}
       float alpha = result.material.get_alpha_mix();
-      Ray refracted_ray =  Ray::refracted_ray(p,ray.direction(),normal_sign*n,ior,SCENE_RAY_OFFSET);
+      Ray refracted_ray =  Ray::refracted_ray(p,ray.direction(),normal_sign*n,ior);
 
       Ray refl_ray = Ray::reflected_ray(ray.direction(),n,p);
 
@@ -178,7 +179,7 @@ Vec3 Scene::rayTraceRecursive(Ray const & ray, std::vector<Vec3>& rays_intersect
       Vec3 n = result.normal;
       // compute the reflacted ray from the intersection point p
       // with normal n
-      Ray refl_ray = Ray::reflected_ray(ray.direction(),n,p);
+
       // BRDF part 1
       // Path tracing
       // trace a ray to every light
@@ -187,13 +188,14 @@ Vec3 Scene::rayTraceRecursive(Ray const & ray, std::vector<Vec3>& rays_intersect
         Vec3 l_pos = lights[mIt].get_sample();
         Vec3 l_dir = l_pos - p;
         // angle with intersection and light source
-        float theta_1 = Vec3::dot(l_dir,n);
+        l_dir.normalize();
+        float theta = Vec3::dot(l_dir,n);
 
         // DIFFUSE_SPECULAR object have no contribution from light
         // coming from behind
-        if( theta_1 > 0 ) {
-          Ray l_ray = Ray(p,l_dir,SCENE_RAY_OFFSET);
-          // calculate omega in
+        if( theta > 0 ) {
+          Ray l_ray = Ray(p,l_dir);
+          Ray refl_l_ray = Ray::reflected_ray(p,l_dir,n);
           RaySceneIntersection result = getIntersection(l_ray);
           if (result.intersectionExists) {
             // check if interected the current light
@@ -203,21 +205,22 @@ Vec3 Scene::rayTraceRecursive(Ray const & ray, std::vector<Vec3>& rays_intersect
               // but the normal to the intersection is opposite to the ray
               // so check befor intersecting to avoid lounching
               float solid_angle = lights[mIt].solid_angle(p);
-              float theta_2 = std::max(0.f,Vec3::dot(refl_ray.direction(),-1*ray.direction()));
+              float refl_to_eye_angle = std::max(0.f,Vec3::dot(refl_l_ray.direction(),-1*ray.direction()));
+              float sigma = std::pow(refl_to_eye_angle,S);
               color_value += solid_angle * Vec3::componentProduct(
-                theta_1*DC + SC*std::pow(theta_2,S), // DIFFUSE + SPECULAR
-                L_color // Light color
+                L_color,
+                DC*theta + SC*sigma// DIFFUSE + SPECULAR NO ambient in path thracing
               );
-            }  
+            }
           }
         }
 
       }
 
       // DIFFUSE SPECULAR BRDF part 2
-      // Montecarlo sampling
-      Ray random_ray = Ray(p,Vec3::random_in_emisphere(p,n,get_seed()),SCENE_RAY_OFFSET);
-      Ray reflected_random_ray = Ray::reflected_ray(random_ray.direction(),n,p);
+      // Montecarlo sampling the global illumination part
+      Ray random_ray = Ray(p,Vec3::random_in_emisphere(p,n,get_seed()) );
+      Ray reflected_random_ray = Ray::reflected_ray(p,random_ray.direction(),n);
       float sigma_1 = Vec3::dot(n,random_ray.direction());
       float sigma_2 = std::max(0.f,Vec3::dot(reflected_random_ray.direction(),-1*ray.direction()));
       color_value += Vec3::componentProduct(

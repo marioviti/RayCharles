@@ -29,7 +29,7 @@ class Material {
         type=DIFFUSE_SPECULAR;
         specular_color=Vec3(1,1,1);
         diffuse_color=Vec3(0.3,0.4,0.5);
-        shininess=3.3;
+        shininess=10.0;
         texturized = false;
         mirror=false;
     }
@@ -43,8 +43,8 @@ class Material {
     void set_mirror() { tint=Vec3(0.,0.,0);  mirror=true; type = MIRROR; }
     void unset_mirror() { mirror=false; }
 
-    void set_tranparent() { alpha_mix=0.85; index_of_refraction=1.1; type = TRANSPARENT; }
-    void set_tranparent(float ior) { index_of_refraction=ior; alpha_mix=0.5; type = TRANSPARENT; }
+    void set_tranparent() { alpha_mix=0.5; index_of_refraction=0.65; type = TRANSPARENT; }
+    void set_tranparent(float ior) { index_of_refraction=ior; alpha_mix=0.6; type = TRANSPARENT; }
     void set_tranparent(float ior, float alpha) { index_of_refraction=ior; alpha_mix=alpha; type = TRANSPARENT; }
     float get_index_of_refraction() { return index_of_refraction; }
     float get_alpha_mix() { return alpha_mix; }

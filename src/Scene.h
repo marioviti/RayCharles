@@ -1,10 +1,10 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#define SCENE_MAX_SEED 10000000
-#define SCEN_MAX_LAMBDA 1000
-#define SCENE_RAY_OFFSET 0.001f
-#define SCENE_MIN_LAMBDA_EPSILON 0.001f
+#define SCENE_MAX_SEED 1000000
+#define SCEN_MAX_LAMBDA 1000000
+#define SCENE_RAY_OFFSET 10e-6f
+#define SCENE_MIN_LAMBDA_EPSILON 10e-6f
 #define SCENE_OBJECT_TYPE_LIGHT 0
 #define SCENE_OBJECT_TYPE_SPHERE 1
 #define SCENE_OBJECT_TYPE_MESH 2
@@ -49,6 +49,7 @@ private:
 
     GLProgram* gl_Program;
     Vec3 bkg_color;
+    Vec3 ambient_color;
 
 public:
     Scene() { bkg_color = Vec3(0.1,0.2,0.6); max_depth_recursion_path_trace=8; }

@@ -42,6 +42,7 @@
 #include "src/Texture.h"
 int Instance::serial_id=0;
 int Texture::bind_index_gen=0;
+int Texture::bilinear_filter=1; // initialized and set here
 
 using namespace std;
 
@@ -65,16 +66,16 @@ static bool fullScreen = false;
 // Render Parametes.
 // -------------------------------------------
 
-int AAsamples = 8;
+int AAsamples = 64;
 
 // -------------------------------------------
 // Scene Parametes.
 // -------------------------------------------
 
 Scene scene;
-Vec3 inputLightPosition = Vec3(0.0,1.5,0.0);
+Vec3 inputLightPosition = Vec3(0.5,1.3,1.0);
 Vec3 light_color = Vec3(1.0,1.0,1.0);
-Vec3 ambient_color = Vec3(0.1,0.2,0.6);;
+Vec3 ambient_color = Vec3(0.1,0.2,0.4);
 
 // -------------------------------------------
 // Shaders Parametes.
@@ -90,7 +91,7 @@ char *fragment_shader_path = "./src/specular_shader.frag";
 // Default Material Parameters // also passed to the shader
 // -------------------------------------------
 
-float specular_intensity = 4.0;
+float specular_intensity = 10.0;
 Vec3 diffuse_color = Vec3(0.3,0.4,0.5);
 Vec3 specular_color = Vec3(1.0,1.0,1.0);
 
@@ -118,9 +119,9 @@ void setup_scene() {
   //scene.addMesh (argc == 2 ? argv[1] : "models/monkey.off");
 
   //scene.addSphere(0.4,Vec3(1.,0.5,0.));
-  //scene.addSphere_with_texture(0.6,Vec3(0.,0.,0.),texture_bind_index);
+  scene.addSphere_with_texture(1.0,Vec3(0.,0.,0.),texture_bind_index);
   //scene.addCube(1.0,Vec3(0.,0.,0.));
-  //scene.addSphere_with_transparecy(0.4,Vec3(-0.7,0.5,0.5));
+  //scene.addSphere_with_transparecy(1.0,Vec3(0.0,0.05,0.0));
   //scene.addSphere(0.7,Vec3(0.0,0.0,-1.1));
   Material default_material = Material();
   default_material.set_type(DIFFUSE_SPECULAR);
@@ -128,7 +129,7 @@ void setup_scene() {
   default_material.set_specular_color(specular_color);
   default_material.set_shininess(specular_intensity);
 
-  scene.addSphere_with_transparecy(0.5,Vec3(0.0,0.0,0.0));
+  //scene.addSphere_with_transparecy(0.5,Vec3(0.0,0.0,0.0));
   scene.addQuad(Vec3(-10,-1,-10),Vec3(10,-1,-10),Vec3(-10,-1,10),Vec3(10,-1.0,10));
 
 }

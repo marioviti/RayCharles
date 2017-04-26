@@ -18,6 +18,7 @@ class Texture {
     std::vector<Vec3> vecImageTexture;
   public:
     Texture(){};
+    int static bilinear_filter;
     int static bind_index_gen;
     Vec3 evalue(float u, float v); // will return the pixel value from u,v coords
     void load_texture(std::string& filename);

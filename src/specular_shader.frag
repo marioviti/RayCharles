@@ -63,10 +63,10 @@ void main (void) {
     if(has_texture == 1) {
       fragUV = gl_TexCoord[0].xy;
       color1 = texture2D(uTextureColor,fragUV);
-      color = C * inputLightMaterial * (inputObjectAmbientMaterial + color1*theta) + inputObjectSpecularMaterial*sigma;
+      color = C * inputLightMaterial * (inputObjectAmbientMaterial + color1*theta + inputObjectSpecularMaterial*sigma);
     }
     else
-      color = C * inputLightMaterial * (inputObjectAmbientMaterial + inputObjectDiffuseMaterial*theta) + inputObjectSpecularMaterial*sigma;
+      color = C * inputLightMaterial * (inputObjectAmbientMaterial + inputObjectDiffuseMaterial*theta + inputObjectSpecularMaterial*sigma);
 
     // ----------------------------------------
     gl_FragColor = color;

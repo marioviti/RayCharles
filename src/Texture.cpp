@@ -1,5 +1,3 @@
-
-
 #include "Texture.h"
 #include "PPMIO.h"
 
@@ -13,28 +11,77 @@ Vec3 Texture::evalue(float u, float v) {
   pu = u*w; pv = v*h;
   nu = int(floor(pu)); nv = int(floor(pv));
   du = pu-nu-0.5; dv = pv-nv-0.5;
-  r = imageTexture[3*(nu +w*nv)+0];
-  g = imageTexture[3*(nu +w*(nv))+1];
-  b = imageTexture[3*(nu +w*(nv))+2];
 
-  // no interpolation on the margins
-  if (nu == 0 or nu == w-1 or nv == 0 or nu == h )
+  // AA bilinera filtering
+  if (Texture::bilinear_filter!=1) {
+    r = imageTexture[3*(nu +w*nv)+0];
+    g = imageTexture[3*(nu +w*(nv))+1];
+    b = imageTexture[3*(nu +w*(nv))+2];
     return Vec3(r/255.f,g/255.f,b/255.f);
-  // bilinear interpolation
-  r = (1-du)*(1-dv)*imageTexture[3*(nu +w*nv)+0];
-  r += (1-du)*dv*imageTexture[3*(nu +w*(nv+1))+0];
-  r += du*(1-dv)*imageTexture[3*(nu+1 +w*(nv))+0];
-  r += du*dv*imageTexture[3*(nu+1 +w*(nv+1))+0];
+  }
+  if ( nu==0 or nu == w-1 or nv == 0 or nv == h-1 ) {
+    r = imageTexture[3*(nu +w*nv)+0];
+    g = imageTexture[3*(nu +w*(nv))+1];
+    b = imageTexture[3*(nu +w*(nv))+2];
+  }
+  /*
+  if (( nu==0 or nu == w-1) and (nv == 0 or nv == h-1) ) {
+    // no interpolation
+    r = imageTexture[3*(nu +w*nv)+0];
+    g = imageTexture[3*(nu +w*(nv))+1];
+    b = imageTexture[3*(nu +w*(nv))+2];
+  }
+  else if ( nu==0 or nu == w-1) {
+    // linera interpolation vertical
+    r = (1-dv)*imageTexture[3*(nu +w*nv)+0];
+    r += (dv)*imageTexture[3*(nu +w*nv+1)+0];
 
-  g = (1-du)*(1-dv)*imageTexture[3*(nu +w*nv)+1];
-  g += (1-du)*dv*imageTexture[3*(nu +w*(nv+1))+1];
-  g += du*(1-dv)*imageTexture[3*(nu+1 +w*(nv))+1];
-  g += du*dv*imageTexture[3*(nu+1 +w*(nv+1))+1];
+    g = (1-dv)*imageTexture[3*(nu +w*nv)+1];
+    g += (dv)*imageTexture[3*(nu +w*nv+1)+1];
 
-  b = (1-du)*(1-dv)*imageTexture[3*(nu +w*nv)+2];
-  b += (1-du)*dv*imageTexture[3*(nu +w*(nv+1))+2];
-  b += du*(1-dv)*imageTexture[3*(nu+1 +w*(nv))+2];
-  b += du*dv*imageTexture[3*(nu+1 +w*(nv+1))+2];
+    b = (1-dv)*imageTexture[3*(nu +w*nv)+1];
+    b += (dv)*imageTexture[3*(nu +w*nv+1)+1];
+
+  }
+  else if ( nv == 0 or nv == h-1 ) {
+    // linera interpolation horizontal
+    r = (1-du)*imageTexture[3*(nu +w*nv)+0];
+    r += (du)*imageTexture[3*(nu+1 +w*nv)+0];
+
+    g = (1-du)*imageTexture[3*(nu +w*nv)+1];
+    g += (du)*imageTexture[3*(nu+1 +w*nv)+1];
+
+    b = (1-du)*imageTexture[3*(nu +w*nv)+2];
+    b += (du)*imageTexture[3*(nu+1 +w*nv)+2];
+  }
+  */
+  else {
+    // bilinear interpolation
+    r = (1-du)*(1-dv)*imageTexture[3*(nu +w*nv)+0];
+    r += (1-du)*dv*imageTexture[3*(nu +w*(nv+1))+0];
+    r += du*(1-dv)*imageTexture[3*(nu+1 +w*(nv))+0];
+    r += du*dv*imageTexture[3*(nu+1 +w*(nv+1))+0];
+
+    g = (1-du)*(1-dv)*imageTexture[3*(nu +w*nv)+1];
+    g += (1-du)*dv*imageTexture[3*(nu +w*(nv+1))+1];
+    g += du*(1-dv)*imageTexture[3*(nu+1 +w*(nv))+1];
+    g += du*dv*imageTexture[3*(nu+1 +w*(nv+1))+1];
+
+    b = (1-du)*(1-dv)*imageTexture[3*(nu +w*nv)+2];
+    b += (1-du)*dv*imageTexture[3*(nu +w*(nv+1))+2];
+    b += du*(1-dv)*imageTexture[3*(nu+1 +w*(nv))+2];
+    b += du*dv*imageTexture[3*(nu+1 +w*(nv+1))+2];
+  }
+
+  // check for little errors
+  if(r>255.f) { r=255.f;}
+  if(g>255.f) { g=255.f;}
+  if(b>255.f) { b=255.f;}
+
+  if(r<0.f) { r=0.f;}
+  if(g<0.f) { g=0.f;}
+  if(b<0.f) { b=0.f;}
+
   return Vec3(r/255.f,g/255.f,b/255.f);
 }
 
