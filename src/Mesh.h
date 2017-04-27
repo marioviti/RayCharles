@@ -93,7 +93,11 @@ public:
     std::vector<unsigned int> cageOrder;
     std::vector<Vec3> cageVertices;
 
-    void set_texture_index(int bindindex_) { material.set_texture_index(bindindex_); bindindex = bindindex_; has_texture=1; }
+    void set_texture_index(int bindindex_) {
+      material.set_texture_index(bindindex_);
+      bindindex = bindindex_;
+      has_texture=1;
+    }
     int get_texture_index() { return bindindex; }
     int unset_texture_index() { has_texture = 0; }
 

@@ -112,7 +112,7 @@ Vec3 Scene::rayTraceRecursive(Ray const & origin_ray, std::vector<Vec3>& rays_in
 
   RaySceneIntersection result = getIntersection(ray);
   // If there was no intersection return the bkg color
-  if(!result.intersectionExists) { return bkg_color; }
+  if(!result.intersectionExists) { return ambient_color; }
 
   // TESTS
   //rays_intersections.push_back(result.intersection);
@@ -131,18 +131,22 @@ Vec3 Scene::rayTraceRecursive(Ray const & origin_ray, std::vector<Vec3>& rays_in
       Vec3 p = result.intersection;
       float ior = result.material.get_index_of_refraction();
       float normal_sign = 1;
-      if (ray.is_refracted()) { ior = 1/ior; normal_sign = -1;}
-      float alpha = result.material.get_alpha_mix();
-      Ray refracted_ray =  Ray::refracted_ray(p,ray.direction(),normal_sign*n,ior);
-
-      Ray refl_ray = Ray::reflected_ray(ray.direction(),n,p);
-
-      if (ray.is_refracted())
+      if (ray.is_refracted()) {
+        ior = 1/ior;
+        normal_sign = -1;
+        Ray refracted_ray = Ray::refracted_ray(p,ray.direction(),normal_sign*n,ior);
         refracted_ray.refracted = false;
-
-      Vec3 color_refracted = rayTraceRecursive(refracted_ray,rays_intersections,depth-1);
-      Vec3 color_reflected = rayTraceRecursive(refl_ray,rays_intersections,depth-1);
-      color_value = alpha*color_refracted + (1-alpha)*color_reflected;
+        Vec3 color_refracted = rayTraceRecursive(refracted_ray,rays_intersections,depth-1);
+        color_value = color_refracted;
+      }
+      else {
+        float alpha = result.material.get_alpha_mix();
+        Ray refracted_ray = Ray::refracted_ray(p,ray.direction(),normal_sign*n,ior);
+        Ray refl_ray = Ray::reflected_ray(ray.direction(),n,p);
+        Vec3 color_refracted = rayTraceRecursive(refracted_ray,rays_intersections,depth-1);
+        Vec3 color_reflected = rayTraceRecursive(refl_ray,rays_intersections,depth-1);
+        color_value = alpha*color_refracted + (1-alpha)*color_reflected;
+      }
     }
 
     // DIFFUSE MIRROR
@@ -157,7 +161,8 @@ Vec3 Scene::rayTraceRecursive(Ray const & origin_ray, std::vector<Vec3>& rays_in
       Ray refl_ray = Ray::reflected_ray(ray.direction(),n,p);
       color_value = rayTraceRecursive(refl_ray,rays_intersections,depth-1);
       //return theta_2 * Vec3::componentProduct(
-      //  solid_angle*L_color, rayTraceRecursive(refl_ray,rays_intersections,depth-1));
+      // solid_angle*L_color,
+      // rayTraceRecursive(refl_ray,rays_intersections,depth-1));
     }
 
     // DIFFUSE SPECULAR BRDF
@@ -258,6 +263,7 @@ void Scene::addSphere_with_transparecy(float _ray, Vec3 _center ) {
 
 void Scene::addSphere_with_texture(float _ray, Vec3 _center ,int bind_index_texture) {
   Sphere sphere = Sphere(_ray,_center);
+  sphere.set_material(default_material);
   sphere.buildMesh(15,15);
   sphere.set_texture_index(bind_index_texture);
   spheres.push_back(sphere);
@@ -265,12 +271,14 @@ void Scene::addSphere_with_texture(float _ray, Vec3 _center ,int bind_index_text
 
 void Scene::addSphere(float _ray, Vec3 _center ) {
   Sphere sphere = Sphere(_ray,_center);
+  sphere.set_material(default_material);
   sphere.buildMesh(15,15);
   spheres.push_back(sphere);
 }
 
 void Scene::addCube(float _side, Vec3 _center ) {
   Cube cube = Cube(_side,_center);
+  cube.set_material(default_material);
   cube.buildMesh(4);
   cubes.push_back(cube);
 }
@@ -278,6 +286,7 @@ void Scene::addCube(float _side, Vec3 _center ) {
 void Scene::addQuad(Vec3 c1, Vec3 c2, Vec3 c3, Vec3 c4) {
   meshes.resize( meshes.size() + 1 );
   Mesh & meshAjoute = meshes[ meshes.size() - 1 ];
+  meshAjoute.set_material(default_material);
   meshAjoute.setQuads(c1,c2,c3,c4);
   //meshAjoute.centerAndScaleToUnit ();
   meshAjoute.recomputeNormals ();
@@ -287,6 +296,7 @@ void Scene::addQuad(Vec3 c1, Vec3 c2, Vec3 c3, Vec3 c4) {
 void Scene::addMesh(std::string const & modelFilename) {
   meshes.resize( meshes.size() + 1 );
   Mesh & meshAjoute = meshes[ meshes.size() - 1 ];
+  meshAjoute.set_material(default_material);
   meshAjoute.loadOFF (modelFilename);
   meshAjoute.centerAndScaleToUnit ();
   meshAjoute.recomputeNormals ();
@@ -295,6 +305,11 @@ void Scene::addMesh(std::string const & modelFilename) {
 
 void Scene::add_light(Vec3 const & light_position) {
   Light light = Light(light_position);
+  lights.push_back(light);
+}
+
+void Scene::add_light(Vec3 const & light_position, Vec3 const & light_color ) {
+  Light light = Light(light_position,light_color);
   lights.push_back(light);
 }
 
@@ -334,7 +349,18 @@ void Scene::draw() const {
       Cube const & cube = cubes[mIt];
       gl_Program->use();
       gl_Program -> setUniform1i("has_texture", cube.has_texture);
-      cube.draw();
+      if (cube.has_texture == 1) {
+        gl_Program->setUniform1i("uTextureColor", textures[cube.bindindex].get_bindIndex());
+        glEnable(GL_LIGHTING);
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D , textures[cube.bindindex].get_handleIndex());
+        glDisable(GL_LIGHTING);
+        glColor3f(1.,1.,1.);
+        cube.drawWithTexture();
+        glDisable(GL_TEXTURE_2D);
+      }
+      else
+        cube.draw();
       gl_Program->stop();
   }
   for( unsigned int mIt = 0 ; mIt < spheres.size() ; ++mIt ) {

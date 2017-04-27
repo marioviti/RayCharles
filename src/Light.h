@@ -29,31 +29,22 @@ class Light:public Instance {
     int myseed;
 
   public:
+
     Light() { init_seed(); }
 
     Light(Vec3 const & position_) : Light() {
       type = SPHERIC;
       ligth_sphere = Sphere(0.1,position_);
       position=ligth_sphere.centre;
-      color=Vec3(1.,0.99,0.99);
+      color=Vec3(1.0,1.0,1.0);
     }
 
-    void init_seed() {
-      srand(time(0));
-      myseed = static_cast <int> (rand());
+    Light(Vec3 const & position_,Vec3 const & color_ ) : Light(position_) {
+      color=color_;
     }
 
-    float solid_angle(Vec3 const & p) {
-      if (type == SPHERIC)
-        return ligth_sphere.solid_angle(p);
-      return 1.f;
-    }
-
-    int grab_seed() {
-      myseed = (myseed + 1)%LIGHT_MAX_SEED;
-      return myseed;
-    }
-
+    void set_light(Vec3 light_color) { color=light_color; }
+    void set_posistion(Vec3 light_position) { position=light_position; }
     Vec3 get_color() { return color; }
     Vec3 get_position() { return position; }
     Vec3 get_sample() {
@@ -63,6 +54,22 @@ class Light:public Instance {
       y = (static_cast <float> ( (rand()) / (static_cast <float> (RAND_MAX)) ))*2 -1;
       z = (static_cast <float> ( (rand()) / (static_cast <float> (RAND_MAX)) ))*2 -1;
       return position+ligth_sphere.sphere_ray*(1-10e-2)*(Vec3(x,y,z).normalize());
+    }
+
+    void init_seed() {
+      srand(time(0));
+      myseed = static_cast <int> (rand());
+    }
+
+    int grab_seed() {
+      myseed = (myseed + 1)%LIGHT_MAX_SEED;
+      return myseed;
+    }
+
+    float solid_angle(Vec3 const & p) {
+      if (type == SPHERIC)
+        return ligth_sphere.solid_angle(p);
+      return 1.f;
     }
 
     RayLightIntersection getIntersection(Ray const & ray ) const {

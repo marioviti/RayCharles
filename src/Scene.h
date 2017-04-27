@@ -48,11 +48,15 @@ private:
     int max_depth_recursion_path_trace;
 
     GLProgram* gl_Program;
-    Vec3 bkg_color;
     Vec3 ambient_color;
+    Material default_material;
 
 public:
-    Scene() { bkg_color = Vec3(0.1,0.2,0.6); max_depth_recursion_path_trace=8; }
+    Scene() { ambient_color = Vec3(0.5,0.5,0.5); max_depth_recursion_path_trace=8; }
+
+    // getter and setters
+    Material get_default_material() { return default_material; }
+    void set_default_material(Material def_material) { default_material = def_material; }
 
     // Rendering methods
     int get_seed();
@@ -62,15 +66,19 @@ public:
     int add_texture(std::string & filename);
 
     // OBJECT ADD methods
+    void set_ambient_color(Vec3 ambient_color_) { ambient_color=ambient_color_; };
     void addSphere(float _ray, Vec3 _center );
     void addSphere_with_texture(float _ray,  Vec3 _center, int bind_index_texture);
     void addSphere_with_mirror(float _ray, Vec3 _center );
     void addSphere_with_transparecy(float _ray, Vec3 _center );
 
     void addCube(float _side, Vec3 _center );
+    void addCube(float _side, Vec3 _center, Vec3 diffuse_color);
     void addQuad(Vec3 c1, Vec3 c2, Vec3 c3, Vec3 c4);
     void addMesh(std::string const & modelFilename);
     void add_light(Vec3 const & light_position);
+    void add_light(Vec3 const & light_position, Vec3 const & light_color );
+
 
     // ADD SHADERS as GLPROGRAM class
     void addGLProgram(GLProgram* _gl_Program);

@@ -33,11 +33,8 @@
 #include "src/Scene.h"
 #include "src/SelTool.h"
 #include "src/Ray.h"
-
 #include "src/matrixUtilities.h"
-
 #include "src/Material.h"
-
 #include "src/Instance.h"
 #include "src/Texture.h"
 int Instance::serial_id=0;
@@ -61,21 +58,31 @@ static int lastX=0, lastY=0, lastZoom=0;
 static unsigned int FPS = 0;
 static bool fullScreen = false;
 
-
 // -------------------------------------------
 // Render Parametes.
 // -------------------------------------------
 
 int AAsamples = 64;
+float DoF = 4.5f; // depth of field
+float aperture = 0.1;
+int set_dof = 0;
 
 // -------------------------------------------
 // Scene Parametes.
 // -------------------------------------------
 
 Scene scene;
-Vec3 inputLightPosition = Vec3(0.5,1.3,1.0);
+Vec3 inputLightPosition = Vec3(0.5,1.0,1.0);
 Vec3 light_color = Vec3(1.0,1.0,1.0);
-Vec3 ambient_color = Vec3(0.1,0.2,0.4);
+Vec3 ambient_color = Vec3(0.4,0.5,0.6);
+
+// -------------------------------------------
+// Default Material Parameters // also passed to the shader
+// -------------------------------------------
+
+float specular_intensity = 10.0;
+Vec3 diffuse_color = Vec3(0.4,0.5,0.5);
+Vec3 specular_color = Vec3(1.0,1.0,1.0);
 
 // -------------------------------------------
 // Shaders Parametes.
@@ -88,19 +95,11 @@ char *vertex_shader_path = "./src/shader.vert";
 char *fragment_shader_path = "./src/specular_shader.frag";
 
 // -------------------------------------------
-// Default Material Parameters // also passed to the shader
-// -------------------------------------------
-
-float specular_intensity = 10.0;
-Vec3 diffuse_color = Vec3(0.3,0.4,0.5);
-Vec3 specular_color = Vec3(1.0,1.0,1.0);
-
-// -------------------------------------------
 // Textures Parameters
 // -------------------------------------------
 
 int texture_bind_index;
-std::string texture_filename = "./src/img/sphereTextures/s1.ppm";
+std::string texture_filename = "./src/img/sphereTextures/s2.ppm";
 
 // -------------------------------------------
 // Texture Checkerboard
@@ -115,21 +114,23 @@ std::vector<Vec3> rays_intersection;
 Ray test_ray = Ray(Vec3(-1.0,0.,0.),Vec3(1.,-0.0,0.));
 
 void setup_scene() {
-  scene.add_light(inputLightPosition);
-  //scene.addMesh (argc == 2 ? argv[1] : "models/monkey.off");
-
-  //scene.addSphere(0.4,Vec3(1.,0.5,0.));
-  scene.addSphere_with_texture(1.0,Vec3(0.,0.,0.),texture_bind_index);
-  //scene.addCube(1.0,Vec3(0.,0.,0.));
-  //scene.addSphere_with_transparecy(1.0,Vec3(0.0,0.05,0.0));
-  //scene.addSphere(0.7,Vec3(0.0,0.0,-1.1));
+  scene.set_ambient_color(ambient_color);
+  scene.add_light(inputLightPosition,light_color);
   Material default_material = Material();
   default_material.set_type(DIFFUSE_SPECULAR);
   default_material.set_diffuse_color(diffuse_color);
   default_material.set_specular_color(specular_color);
   default_material.set_shininess(specular_intensity);
+  scene.set_default_material(default_material);
 
-  //scene.addSphere_with_transparecy(0.5,Vec3(0.0,0.0,0.0));
+  //scene.addMesh (argc == 2 ? argv[1] : "models/monkey.off");
+
+  //scene.addSphere(0.4,Vec3(0.,0.,0.));
+  //scene.addSphere_with_texture(1.0,Vec3(0.,0.,0.),texture_bind_index);
+  //scene.addCube(1.0,Vec3(0.,0.,0.));
+  //scene.addSphere_with_transparecy(1.0,Vec3(0.0,0.05,0.0));
+  //scene.addSphere(0.7,Vec3(0.0,0.0,-1.1));
+  scene.addSphere_with_transparecy(1.0,Vec3(0.0,0.0,0.0));
   scene.addQuad(Vec3(-10,-1,-10),Vec3(10,-1,-10),Vec3(-10,-1,10),Vec3(10,-1.0,10));
 
 }
@@ -139,18 +140,33 @@ void rayTraceFromCamera() {
 	h = (unsigned int) glutGet(GLUT_WINDOW_HEIGHT);
   std::cout << "Ray tracing a " << w << " x " << h << " image" << std::endl;
   camera.apply();
-  Vec3 pos , dir;
+  Vec3 pos , dir, dir_camera;
   std::vector< Vec3 > image( w*h , Vec3(0,0,0) );
+  // calculate look at direction normalized vector
+  screenSpaceToWorldSpaceRay(0.5,0.5,pos,dir_camera);
+  Ray tracing_ray;
+  float u,v;
   for (int y=0; y<h; y++){
     for (int x=0; x<w; x++) {
       for (int aa=0; aa<AAsamples; aa++) {
-        srand(x+y*w+h*w*aa);
         std::cout << "\r" << int(((x + y*w)/float(h*w))*100) << "%";
-        float u = ((float)(x) + (float)(rand())/(float)(RAND_MAX)) / w;
-        float v = ((float)(y) + (float)(rand())/(float)(RAND_MAX)) / h;
-        // this is a random uv that belongs to the pixel xy.
-        screenSpaceToWorldSpaceRay(u,v,pos,dir);
-        image[x + y*w] += scene.rayTrace( Ray(pos, dir), rays_intersection);
+        if (set_dof == 1) {
+          u = ((float)(x) + 0.5)/ w;
+          v = ((float)(y) + 0.5) / h;
+          screenSpaceToWorldSpaceRay(u,v,pos,dir);
+          Vec3 pos_aperture = pos + Vec3::random_unit_vector(x+y*w+h*w*aa)*aperture;
+          Vec3 pos_on_focal_plane = pos+(DoF/Vec3::dot(dir_camera,dir))*dir;
+          Vec3 new_dir = pos_on_focal_plane - pos_aperture;
+          tracing_ray = Ray(pos_aperture, new_dir);
+        }
+        else {
+          srand(x+y*w+h*w*aa);
+          u = ((float)(x) + (float)(rand())/(float)(RAND_MAX)) / w;
+          v = ((float)(y) + (float)(rand())/(float)(RAND_MAX)) / h;
+          screenSpaceToWorldSpaceRay(u,v,pos,dir);
+          tracing_ray = Ray(pos, dir);
+        }
+        image[x + y*w] += scene.rayTrace(tracing_ray, rays_intersection);
       }
       image[x + y*w] = image[x + y*w]/float(AAsamples);
     }
