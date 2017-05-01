@@ -62,7 +62,7 @@ static bool fullScreen = false;
 // Render Parametes.
 // -------------------------------------------
 
-int AAsamples = 64;
+int SPP = 4; // SamplePerPixel
 float DoF = 4.5f; // depth of field
 float aperture = 0.1;
 int set_dof = 0;
@@ -72,7 +72,7 @@ int set_dof = 0;
 // -------------------------------------------
 
 Scene scene;
-Vec3 inputLightPosition = Vec3(0.5,1.0,1.0);
+Vec3 inputLightPosition = Vec3(1.1,3.2,0.5);
 Vec3 light_color = Vec3(1.0,1.0,1.0);
 Vec3 ambient_color = Vec3(0.4,0.5,0.6);
 
@@ -81,7 +81,7 @@ Vec3 ambient_color = Vec3(0.4,0.5,0.6);
 // -------------------------------------------
 
 float specular_intensity = 10.0;
-Vec3 diffuse_color = Vec3(0.4,0.5,0.5);
+Vec3 diffuse_color = Vec3(1.0,1.0,1.0);
 Vec3 specular_color = Vec3(1.0,1.0,1.0);
 
 // -------------------------------------------
@@ -98,8 +98,10 @@ char *fragment_shader_path = "./src/specular_shader.frag";
 // Textures Parameters
 // -------------------------------------------
 
-int texture_bind_index;
-std::string texture_filename = "./src/img/sphereTextures/s2.ppm";
+int sphere_texture_bind_index;
+int plane_texture_bind_index;
+std::string sphere_texture_filename = "./src/img/sphereTextures/s2.ppm";
+std::string plane_texture_filename = "./src/img/sphereTextures/s1.ppm";
 
 // -------------------------------------------
 // Texture Checkerboard
@@ -123,16 +125,19 @@ void setup_scene() {
   default_material.set_shininess(specular_intensity);
   scene.set_default_material(default_material);
 
-  //scene.addMesh (argc == 2 ? argv[1] : "models/monkey.off");
-
+  //scene.addMesh (argc == 2 ? argv[1]:"models/monkey.off");
   //scene.addSphere(0.4,Vec3(0.,0.,0.));
-  //scene.addSphere_with_texture(1.0,Vec3(0.,0.,0.),texture_bind_index);
+  //scene.addSphere_with_texture(1.0,Vec3(0.,0.,0.),sphere_texture_bind_index);
   //scene.addCube(1.0,Vec3(0.,0.,0.));
   //scene.addSphere_with_transparecy(1.0,Vec3(0.0,0.05,0.0));
   //scene.addSphere(0.7,Vec3(0.0,0.0,-1.1));
   scene.addSphere_with_transparecy(1.0,Vec3(0.0,0.0,0.0));
-  scene.addQuad(Vec3(-10,-1,-10),Vec3(10,-1,-10),Vec3(-10,-1,10),Vec3(10,-1.0,10));
-
+  //scene.addQuad(Vec3(-10,-1,-10),Vec3(10,-1,-10),Vec3(-10,-1,10),Vec3(10,-1.0,10));
+  // lb rb lt rt
+  //scene.addPlane_with_Texture(Vec3(-10,-1,-10),Vec3(10,-1,-10),Vec3(-10,-1,10),Vec3(10,-1.0,10),
+  //Vec2(0.0,0.0),Vec2(1.0,0.0),Vec2(0.0,1.0),Vec2(1.0,1.0),plane_texture_bind_index);
+  scene.addPlane_with_Texture(Vec3(-10,-10,1),Vec3(10,-10,1),Vec3(-10,10,1),Vec3(10,10,1),
+  Vec2(0.0,0.0),Vec2(1.0,0.0),Vec2(0.0,1.0),Vec2(1.0,1.0),plane_texture_bind_index);
 }
 
 void rayTraceFromCamera() {
@@ -148,7 +153,7 @@ void rayTraceFromCamera() {
   float u,v;
   for (int y=0; y<h; y++){
     for (int x=0; x<w; x++) {
-      for (int aa=0; aa<AAsamples; aa++) {
+      for (int aa=0; aa<SPP; aa++) {
         std::cout << "\r" << int(((x + y*w)/float(h*w))*100) << "%";
         if (set_dof == 1) {
           u = ((float)(x) + 0.5)/ w;
@@ -168,7 +173,7 @@ void rayTraceFromCamera() {
         }
         image[x + y*w] += scene.rayTrace(tracing_ray, rays_intersection);
       }
-      image[x + y*w] = image[x + y*w]/float(AAsamples);
+      image[x + y*w] = image[x + y*w]/float(SPP);
     }
   }
   std::cout << "\n" << "done: writing image." << " \n";
@@ -235,7 +240,10 @@ void initLight () {
 
 void init () {
 
-    texture_bind_index = scene.add_texture(texture_filename);
+    sphere_texture_bind_index = scene.add_texture(sphere_texture_filename);
+    plane_texture_bind_index = scene.add_texture(plane_texture_filename);
+    std::cout << sphere_texture_bind_index << '\n';
+    std::cout << plane_texture_bind_index << '\n';
     //Gl program
 
     glewExperimental = GL_TRUE;
@@ -486,8 +494,9 @@ int main (int argc, char ** argv) {
     glutInitWindowSize (SCREENWIDTH, SCREENHEIGHT);
     window = glutCreateWindow ("gMini");
 
-    setup_scene();
     init ();
+    setup_scene();
+
     glutIdleFunc (idle);
     glutDisplayFunc (display);
     glutKeyboardFunc (key);

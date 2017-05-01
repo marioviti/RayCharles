@@ -34,7 +34,7 @@ class Light:public Instance {
 
     Light(Vec3 const & position_) : Light() {
       type = SPHERIC;
-      ligth_sphere = Sphere(0.1,position_);
+      ligth_sphere = Sphere(1.0,position_);
       position=ligth_sphere.centre;
       color=Vec3(1.0,1.0,1.0);
     }

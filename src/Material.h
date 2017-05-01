@@ -18,6 +18,7 @@ class Material {
     Vec3 tint;
     Vec3 diffuse_color;
     Vec3 specular_color;
+    Vec3 glass_color;
     float shininess;
     float index_of_refraction;
     float alpha_mix;
@@ -40,17 +41,20 @@ class Material {
     int get_texture_index() { return texture_bind_index; }
 
     bool is_mirror() { return mirror; }
-    void set_mirror() { tint=Vec3(0.,0.,0);  mirror=true; type = MIRROR; }
+    void set_mirror() { tint=Vec3(1.,1.,1); mirror=true; type = MIRROR; }
     void unset_mirror() { mirror=false; }
 
-    void set_tranparent() { alpha_mix=0.75; index_of_refraction=0.8; type = TRANSPARENT; }
-    void set_tranparent(float ior) { index_of_refraction=ior; alpha_mix=0.75; type = TRANSPARENT; }
-    void set_tranparent(float ior, float alpha) { index_of_refraction=ior; alpha_mix=alpha; type = TRANSPARENT; }
+    void set_tranparent() { index_of_refraction=0.8; alpha_mix=0.75; type = TRANSPARENT; glass_color = Vec3(1.0,1.0,1.0); }
+    void set_tranparent(float ior) { index_of_refraction=ior; alpha_mix=0.75; type = TRANSPARENT; glass_color = Vec3(1.0,1.0,1.0); }
+    void set_tranparent(float ior, float alpha) { index_of_refraction=ior; alpha_mix=alpha; type = TRANSPARENT; glass_color = Vec3(1.0,1.0,1.0); }
     float get_index_of_refraction() { return index_of_refraction; }
     float get_alpha_mix() { return alpha_mix; }
 
     void set_tint(Vec3 _tint) { tint = _tint; }
     Vec3 get_tint() { return tint; }
+
+    void set_glass_color(Vec3 _glass_color) { glass_color = _glass_color; }
+    Vec3 get_glass_color() { return glass_color; }
 
     void set_diffuse_color(Vec3 _color) { diffuse_color = _color; }
     Vec3 get_diffuse_color() { return diffuse_color; }

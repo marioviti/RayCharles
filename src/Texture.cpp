@@ -92,6 +92,7 @@ void Texture::load_texture(std::string& filename) {
   bindIndex = new_bind_idx();
   glEnable (GL_TEXTURE_2D);
   glGenTextures (bindIndex, &handleIndex);
+  std::cout << "texture "<< bindIndex << "handle " << handleIndex << '\n';
   glBindTexture (GL_TEXTURE_2D , handleIndex);
   glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

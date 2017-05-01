@@ -106,6 +106,7 @@ public:
 
     // Create routines
     void setQuads(Vec3 c1, Vec3 c2, Vec3 c3, Vec3 c4);
+    void setQuads_with_text(Vec3 c1, Vec3 c2, Vec3 c3, Vec3 c4, Vec2 uvc1, Vec2 uvc2, Vec2 uvc3, Vec2 uvc4);
     void loadOFF (const std::string & filename);
     void recomputeNormals ();
     void centerAndScaleToUnit ();

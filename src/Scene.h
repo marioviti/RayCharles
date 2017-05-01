@@ -6,8 +6,9 @@
 #define SCENE_RAY_OFFSET 10e-6f
 #define SCENE_MIN_LAMBDA_EPSILON 10e-6f
 #define SCENE_OBJECT_TYPE_LIGHT 0
-#define SCENE_OBJECT_TYPE_SPHERE 1
-#define SCENE_OBJECT_TYPE_MESH 2
+#define SCENE_OBJECT_TYPE_QUAD 1
+#define SCENE_OBJECT_TYPE_SPHERE 2
+#define SCENE_OBJECT_TYPE_MESH 3
 
 #include <vector>
 #include <string>
@@ -16,6 +17,7 @@
 #include "Ray.h"
 #include "Light.h"
 #include "Cube.h"
+#include "Quad.h"
 
 #include <GL/glut.h>
 
@@ -42,6 +44,7 @@ private:
     std::vector<Mesh> meshes;
     std::vector<Sphere> spheres;
     std::vector<Cube> cubes;
+    std::vector<Quad> quads;
     std::vector<Light> lights;
 
     int seed; //use to initialize random functions
@@ -62,7 +65,7 @@ public:
     int get_seed();
     RaySceneIntersection getIntersection(Ray const & ray);
     Vec3 rayTrace(Ray const & ray,std::vector<Vec3>& rays_intersections);
-    Vec3 rayTraceRecursive(Ray const & ray, std::vector<Vec3>& rays_intersections, int depth);
+    Vec3 rayTraceRecursive(Ray const & ray, int depth);
     int add_texture(std::string & filename);
 
     // OBJECT ADD methods
@@ -75,6 +78,9 @@ public:
     void addCube(float _side, Vec3 _center );
     void addCube(float _side, Vec3 _center, Vec3 diffuse_color);
     void addQuad(Vec3 c1, Vec3 c2, Vec3 c3, Vec3 c4);
+    void addQuad_with_texture(Vec3 c1, Vec3 c2, Vec3 c3, Vec3 c4, Vec2 uvc1, Vec2 uvc2, Vec2 uvc3, Vec2 uvc4, int bind_index_texture);
+    void addPlane_with_Texture(Vec3 c1, Vec3 c2, Vec3 c3, Vec3 c4, Vec2 uvc1, Vec2 uvc2, Vec2 uvc3, Vec2 uvc4, int bind_index_texture);
+
     void addMesh(std::string const & modelFilename);
     void add_light(Vec3 const & light_position);
     void add_light(Vec3 const & light_position, Vec3 const & light_color );

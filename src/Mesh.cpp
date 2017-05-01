@@ -162,6 +162,23 @@ void Mesh::setQuads(Vec3 c1, Vec3 c2, Vec3 c3, Vec3 c4) {
   V[0].p = c1;  V[1].p = c2;  V[2].p = c3;  V[3].p = c4;
 }
 
+void Mesh::setQuads_with_text(Vec3 c1, Vec3 c2, Vec3 c3, Vec3 c4, Vec2 uvc1, Vec2 uvc2, Vec2 uvc3, Vec2 uvc4) {
+  V.resize(4);
+  T.resize(2);
+  UVs.resize(4);
+  T[0].v[0] = 0;
+  T[0].v[1] = 2;
+  T[0].v[2] = 1;
+
+  T[1].v[0] = 1;
+  T[1].v[1] = 2;
+  T[1].v[2] = 3;
+
+  V[0].p = c1;  V[1].p = c2;  V[2].p = c3;  V[3].p = c4;
+  UVs[0] = uvc1;   UVs[1] = uvc2;   UVs[2] = uvc3;   UVs[3] = uvc4;
+
+}
+
 void Mesh::recomputeNormals () {
     for (unsigned int i = 0; i < V.size (); i++)
         V[i].n = Vec3 (0.0, 0.0, 0.0);
