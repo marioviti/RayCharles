@@ -49,7 +49,9 @@ void main (void) {
         vec4 LModelview = gl_ModelViewMatrix * vec4(lightPosition.xyz,1.0);
         lightPosition = vec3 (LModelview.xyz)/LModelview.w;
     }
-    vec3 directionToLight = normalize(lightPosition - position);
+    vec3 pos_to_light = lightPosition - position;
+    vec3 directionToLight = normalize(pos_to_light);
+    float dist_to_light = dot(pos_to_light,directionToLight);
     vec3 reflectedRayDirection = normalize( - directionToLight + 2.0*dot(directionToLight , normal) * normal );
 
     // RENDERING EQUATION
@@ -67,7 +69,8 @@ void main (void) {
     }
     else
       color = C * inputLightMaterial * (inputObjectAmbientMaterial + inputObjectDiffuseMaterial*theta + inputObjectSpecularMaterial*sigma);
-
+    // solid angle
+    color = color/(dist_to_light);
     // ----------------------------------------
     gl_FragColor = color;
 }

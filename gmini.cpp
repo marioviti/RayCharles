@@ -62,8 +62,8 @@ static bool fullScreen = false;
 // Render Parametes.
 // -------------------------------------------
 
-int SPP = 4; // SamplePerPixel
-float DoF = 4.5f; // depth of field
+int SPP = 32; // SamplePerPixel
+float DoF = 2.5f; // depth of field
 float aperture = 0.1;
 int set_dof = 0;
 
@@ -72,7 +72,7 @@ int set_dof = 0;
 // -------------------------------------------
 
 Scene scene;
-Vec3 inputLightPosition = Vec3(1.1,3.2,0.5);
+Vec3 inputLightPosition = Vec3(0,3.3,3.);
 Vec3 light_color = Vec3(1.0,1.0,1.0);
 Vec3 ambient_color = Vec3(0.4,0.5,0.6);
 
@@ -100,8 +100,8 @@ char *fragment_shader_path = "./src/specular_shader.frag";
 
 int sphere_texture_bind_index;
 int plane_texture_bind_index;
-std::string sphere_texture_filename = "./src/img/sphereTextures/s2.ppm";
-std::string plane_texture_filename = "./src/img/sphereTextures/s1.ppm";
+std::string sphere_texture_filename = "./src/img/scenarioTextures/scene1.ppm";
+std::string plane_texture_filename = "./src/img/planeTextures/grid.ppm";
 
 // -------------------------------------------
 // Texture Checkerboard
@@ -117,7 +117,7 @@ Ray test_ray = Ray(Vec3(-1.0,0.,0.),Vec3(1.,-0.0,0.));
 
 void setup_scene() {
   scene.set_ambient_color(ambient_color);
-  scene.add_light(inputLightPosition,light_color);
+  //scene.add_light(inputLightPosition,light_color);
   Material default_material = Material();
   default_material.set_type(DIFFUSE_SPECULAR);
   default_material.set_diffuse_color(diffuse_color);
@@ -125,19 +125,21 @@ void setup_scene() {
   default_material.set_shininess(specular_intensity);
   scene.set_default_material(default_material);
 
-  //scene.addMesh (argc == 2 ? argv[1]:"models/monkey.off");
-  //scene.addSphere(0.4,Vec3(0.,0.,0.));
-  //scene.addSphere_with_texture(1.0,Vec3(0.,0.,0.),sphere_texture_bind_index);
-  //scene.addCube(1.0,Vec3(0.,0.,0.));
-  //scene.addSphere_with_transparecy(1.0,Vec3(0.0,0.05,0.0));
+  //scene.addMesh ("models/monkey.off");
+  //scene.addSphere(1.0,Vec3(3.,0.,0.));
+  //scene.addSphere(0.5,Vec3(-1.1,0.,1.));
+  //scene.addSphere_with_texture(10.0,Vec3(0.,0.,0.),sphere_texture_bind_index);
+  //scene.addSphere_with_mirror(0.9, Vec3(0.,0.,0.) );
+  scene.addCube(2,Vec3(-3.,0.,0.));
+  scene.addSphere_with_transparecy(1.0,Vec3(0.0,0.05,0.0));
   //scene.addSphere(0.7,Vec3(0.0,0.0,-1.1));
-  scene.addSphere_with_transparecy(1.0,Vec3(0.0,0.0,0.0));
+  //scene.addSphere_with_transparecy(0.95,Vec3(0.0,0.0,0.0));
   //scene.addQuad(Vec3(-10,-1,-10),Vec3(10,-1,-10),Vec3(-10,-1,10),Vec3(10,-1.0,10));
   // lb rb lt rt
-  //scene.addPlane_with_Texture(Vec3(-10,-1,-10),Vec3(10,-1,-10),Vec3(-10,-1,10),Vec3(10,-1.0,10),
-  //Vec2(0.0,0.0),Vec2(1.0,0.0),Vec2(0.0,1.0),Vec2(1.0,1.0),plane_texture_bind_index);
-  scene.addPlane_with_Texture(Vec3(-10,-10,1),Vec3(10,-10,1),Vec3(-10,10,1),Vec3(10,10,1),
+  scene.addPlane_with_Texture(Vec3(-10,-1,-10),Vec3(10,-1,-10),Vec3(-10,-1,10),Vec3(10,-1.0,10),
   Vec2(0.0,0.0),Vec2(1.0,0.0),Vec2(0.0,1.0),Vec2(1.0,1.0),plane_texture_bind_index);
+  //scene.addPlane_with_Texture(Vec3(5,-5,-1),Vec3(-5,-5,-1),Vec3(5,5,-1),Vec3(-5,5,-1),
+  //Vec2(0.0,0.0),Vec2(1.0,0.0),Vec2(0.0,1.0),Vec2(1.0,1.0),plane_texture_bind_index);
 }
 
 void rayTraceFromCamera() {

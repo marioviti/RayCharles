@@ -11,9 +11,10 @@ public:
     Ray( Vec3 const & o , Vec3 const & d ) : Line(o,d) {refracted=false;}
     Ray( Vec3 const & o , Vec3 const & d, float epsilon) : Ray(o+epsilon*d,d) {}
 
-    static Ray reflected_ray (Vec3 const & origin, Vec3 const & d, Vec3 const & n){
-      Vec3 dir = ( -1* d + 2.0*Vec3::dot(d, n) * n );
-      return Ray(origin,dir);
+    static Ray reflected_ray (Vec3 const & origin, Vec3 const & direction, Vec3 const & n){
+      //Rr = Ri - 2 N (Ri . N)
+      Vec3 refl_dir = ( direction - 2.0*n*Vec3::dot(direction, n));
+      return Ray(origin,refl_dir);
     }
 
     static Ray refracted_ray (Vec3 const & p, Vec3 const & d, Vec3 const & n, float ior){

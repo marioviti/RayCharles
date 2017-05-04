@@ -144,13 +144,18 @@ Vec3 Scene::rayTraceRecursive(Ray const & origin_ray, int depth) {
       float normal_sign = 1;
       float alpha = result.material.get_alpha_mix();
       if (Vec3::dot(ray.direction(),n)>0.f) {
-        ior = 1/ior;
+        ior = 1/float(ior);
         normal_sign = -1;
       }
       Ray refracted_ray = Ray::refracted_ray(p,ray.direction(),normal_sign*n,ior);
       Ray refl_ray = Ray::reflected_ray(ray.direction(),normal_sign*n,p);
-      color_value= Vec3::componentProduct( GLASS_COLOR , alpha * rayTraceRecursive( refracted_ray, depth-1) + (1 - alpha) * rayTraceRecursive( refl_ray, depth-1) );
+      if (alpha <1)
+        color_value= Vec3::componentProduct( GLASS_COLOR , alpha * rayTraceRecursive( refracted_ray, depth-1) + (1 - alpha) * rayTraceRecursive( refl_ray, depth-1) );
+      else
+        color_value= Vec3::componentProduct( GLASS_COLOR , rayTraceRecursive( refracted_ray, depth-1) );
+
     }
+
 
     // MIRROR BRDF
     if (result.material.get_type() == MIRROR) {
@@ -161,7 +166,7 @@ Vec3 Scene::rayTraceRecursive(Ray const & origin_ray, int depth) {
       Vec3 n = result.normal;
       // compute the reflacted ray from the intersection point p
       // with normal n
-      Ray refl_ray = Ray::reflected_ray(ray.direction(),n,p);
+      Ray refl_ray = Ray::reflected_ray(p,ray.direction(),n);
       color_value = Vec3::componentProduct(TINT,rayTraceRecursive(refl_ray, depth-1));
     }
 
@@ -264,7 +269,7 @@ void Scene::addSphere_with_mirror(float _ray, Vec3 _center ) {
 void Scene::addSphere_with_transparecy(float _ray, Vec3 _center ) {
   Sphere sphere = Sphere(_ray,_center);
   sphere.buildMesh(15,15);
-  sphere.material.set_tranparent(0.7,1.0);
+  sphere.material.set_tranparent(0.95,1.0);
   spheres.push_back(sphere);
 }
 
