@@ -153,9 +153,7 @@ Vec3 Scene::rayTraceRecursive(Ray const & origin_ray, int depth) {
         color_value= Vec3::componentProduct( GLASS_COLOR , alpha * rayTraceRecursive( refracted_ray, depth-1) + (1 - alpha) * rayTraceRecursive( refl_ray, depth-1) );
       else
         color_value= Vec3::componentProduct( GLASS_COLOR , rayTraceRecursive( refracted_ray, depth-1) );
-
     }
-
 
     // MIRROR BRDF
     if (result.material.get_type() == MIRROR) {
@@ -170,8 +168,15 @@ Vec3 Scene::rayTraceRecursive(Ray const & origin_ray, int depth) {
       color_value = Vec3::componentProduct(TINT,rayTraceRecursive(refl_ray, depth-1));
     }
 
+    if (result.material.get_type() == SCENARIO ) {
+      if(result.material.has_texture()) {
+        Vec3 DC = textures[result.material.get_texture_index()].evalue(result.u,result.v);
+        return DC;
+      }
+    }
     // DIFFUSE SPECULAR BRDF
-    if (result.material.get_type() == DIFFUSE_SPECULAR) {
+    if (result.material.get_type() == DIFFUSE_SPECULAR or
+        result.material.get_type() == DIFFUSE) {
 
       Vec3 DC;
       DC = result.material.get_diffuse_color(); //diffuse color
@@ -201,27 +206,36 @@ Vec3 Scene::rayTraceRecursive(Ray const & origin_ray, int depth) {
         // coming from behind
 
         if( theta > 0 ) {
-          Ray l_ray = Ray(p,l_dir);
-          Ray refl_l_ray = Ray::reflected_ray(p,l_dir,n);
-          RaySceneIntersection result = getIntersection(l_ray);
-          if (result.intersectionExists) {
-            // check if interected the current light
-            if (result.objUniqueId == lights[mIt].get_unique_id()) {
-              Vec3 L_color = lights[mIt].get_color();
-              // a particular case. a ray may intersect the light
-              // but the normal to the intersection is opposite to the ray
-              // so check befor intersecting to avoid lounching
-              float solid_angle = lights[mIt].solid_angle(p);
-              float refl_to_eye_angle = std::max(0.f,Vec3::dot(refl_l_ray.direction(),ray.direction()));
-              float sigma = std::pow(refl_to_eye_angle,S);
-              color_value += solid_angle * Vec3::componentProduct(
-                L_color,
-                DC*theta + SC*sigma// DIFFUSE + SPECULAR NO ambient in path thracing
-              );
+          if (result.material.get_type() == DIFFUSE_SPECULAR ) {
+            Ray l_ray = Ray(p,l_dir);
+            Ray refl_l_ray = Ray::reflected_ray(p,l_dir,n);
+            RaySceneIntersection result = getIntersection(l_ray);
+            if (result.intersectionExists) {
+              // check if interected the current light
+              if (result.objUniqueId == lights[mIt].get_unique_id()) {
+                Vec3 L_color = lights[mIt].get_color();
+                // a particular case. a ray may intersect the light
+                // but the normal to the intersection is opposite to the ray
+                // so check befor intersecting to avoid lounching
+                float solid_angle = lights[mIt].solid_angle(p);
+                float refl_to_eye_angle = std::max(0.f,Vec3::dot(refl_l_ray.direction(),ray.direction()));
+                float sigma = std::pow(refl_to_eye_angle,S);
+                color_value += solid_angle * Vec3::componentProduct(
+                  L_color,
+                  DC*theta + SC*sigma// DIFFUSE + SPECULAR NO ambient in path thracing
+                );
+              }
             }
           }
+          else if (result.material.get_type() == DIFFUSE ) {
+            float solid_angle = lights[mIt].solid_angle(p);
+            Vec3 L_color = lights[mIt].get_color();
+            color_value += solid_angle * Vec3::componentProduct(
+              L_color,
+              DC*theta // DIFFUSE NO ambient in path thracing
+            );
+          }
         }
-
       }
 
       // DIFFUSE SPECULAR BRDF part 2
@@ -270,7 +284,7 @@ void Scene::addSphere_with_mirror(float _ray, Vec3 _center ) {
 void Scene::addSphere_with_transparecy(float _ray, Vec3 _center ) {
   Sphere sphere = Sphere(_ray,_center);
   sphere.buildMesh(15,15);
-  sphere.material.set_tranparent(0.95,1.0);
+  sphere.material.set_tranparent(0.95,0.75);
   spheres.push_back(sphere);
 }
 
@@ -278,6 +292,19 @@ void Scene::addSphere_with_texture(float _ray, Vec3 _center ,int bind_index_text
   Sphere sphere = Sphere(_ray,_center);
   sphere.set_material(default_material);
   sphere.buildMesh(15,15);
+  sphere.set_texture_index(bind_index_texture);
+  sphere.bindindex = bind_index_texture;
+  spheres.push_back(sphere);
+}
+
+void Scene::addScenario(int bind_index_texture) {
+  float _ray = 10.0; Vec3 _center = Vec3(0.,0.,0.);
+  Sphere sphere = Sphere(_ray,_center);
+  sphere.set_material(default_material);
+  sphere.material.set_type(SCENARIO);
+  sphere.buildMesh(15,15);
+  //sphere.flipNormals();
+  //sphere.buildArray();
   sphere.set_texture_index(bind_index_texture);
   sphere.bindindex = bind_index_texture;
   spheres.push_back(sphere);

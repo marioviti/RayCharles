@@ -68,9 +68,10 @@ public:
     Vec3 rayTraceRecursive(Ray const & ray, int depth);
     int add_texture(std::string & filename);
 
-    // OBJECT ADD methods
     void set_ambient_color(Vec3 ambient_color_) { ambient_color=ambient_color_; };
-    void addSphere(float _ray, Vec3 _center );
+    // OBJECT ADD methods
+    void addScenario(int bind_index_texture);
+    void addSphere(float _ray, Vec3 _center);
     void addSphere_with_texture(float _ray,  Vec3 _center, int bind_index_texture);
     void addSphere_with_mirror(float _ray, Vec3 _center );
     void addSphere_with_transparecy(float _ray, Vec3 _center );

@@ -6,6 +6,7 @@
 #define DIFFUSE_SPECULAR 2
 #define MIRROR 3
 #define TRANSPARENT 4
+#define SCENARIO 5
 
 #include "Vec3.h"
 #include "Texture.h"
@@ -41,7 +42,7 @@ class Material {
     int get_texture_index() { return texture_bind_index; }
 
     bool is_mirror() { return mirror; }
-    void set_mirror() { tint=Vec3(1.,1.,1); mirror=true; type = MIRROR; }
+    void set_mirror() { tint=Vec3(1.,0.5,0.5); mirror=true; type = MIRROR; }
     void unset_mirror() { mirror=false; }
 
     void set_tranparent() { index_of_refraction=0.8; alpha_mix=0.75; type = TRANSPARENT; glass_color = Vec3(1.0,1.0,1.0); }

@@ -116,6 +116,7 @@ public:
     void draw() const;
     void drawWithTexture() const;
     void drawCage() const;
+    void flipNormals();
 };
 
 #endif

@@ -179,6 +179,11 @@ void Mesh::setQuads_with_text(Vec3 c1, Vec3 c2, Vec3 c3, Vec3 c4, Vec2 uvc1, Vec
 
 }
 
+void Mesh::flipNormals() {
+  for (unsigned int i = 0; i < V.size (); i++)
+      V[i].n = -1*V[i].n;
+}
+
 void Mesh::recomputeNormals () {
     for (unsigned int i = 0; i < V.size (); i++)
         V[i].n = Vec3 (0.0, 0.0, 0.0);
