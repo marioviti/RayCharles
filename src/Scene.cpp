@@ -199,6 +199,7 @@ Vec3 Scene::rayTraceRecursive(Ray const & origin_ray, int depth) {
 
         // DIFFUSE_SPECULAR object have no contribution from light
         // coming from behind
+
         if( theta > 0 ) {
           Ray l_ray = Ray(p,l_dir);
           Ray refl_l_ray = Ray::reflected_ray(p,l_dir,n);
@@ -211,7 +212,7 @@ Vec3 Scene::rayTraceRecursive(Ray const & origin_ray, int depth) {
               // but the normal to the intersection is opposite to the ray
               // so check befor intersecting to avoid lounching
               float solid_angle = lights[mIt].solid_angle(p);
-              float refl_to_eye_angle = std::max(0.f,Vec3::dot(refl_l_ray.direction(),-1*ray.direction()));
+              float refl_to_eye_angle = std::max(0.f,Vec3::dot(refl_l_ray.direction(),ray.direction()));
               float sigma = std::pow(refl_to_eye_angle,S);
               color_value += solid_angle * Vec3::componentProduct(
                 L_color,

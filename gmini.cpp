@@ -62,7 +62,7 @@ static bool fullScreen = false;
 // Render Parametes.
 // -------------------------------------------
 
-int SPP = 32; // SamplePerPixel
+int SPP = 2; // SamplePerPixel
 float DoF = 2.5f; // depth of field
 float aperture = 0.1;
 int set_dof = 0;
@@ -72,16 +72,16 @@ int set_dof = 0;
 // -------------------------------------------
 
 Scene scene;
-Vec3 inputLightPosition = Vec3(0,3.3,3.);
+Vec3 inputLightPosition = Vec3(0.8,0.8,1.8);
 Vec3 light_color = Vec3(1.0,1.0,1.0);
-Vec3 ambient_color = Vec3(0.4,0.5,0.6);
+Vec3 ambient_color = Vec3(0.7,0.8,0.9);
 
 // -------------------------------------------
 // Default Material Parameters // also passed to the shader
 // -------------------------------------------
 
-float specular_intensity = 10.0;
-Vec3 diffuse_color = Vec3(1.0,1.0,1.0);
+float specular_intensity = 10.f;
+Vec3 diffuse_color = Vec3(0.3,0.5,0.8);
 Vec3 specular_color = Vec3(1.0,1.0,1.0);
 
 // -------------------------------------------
@@ -117,7 +117,7 @@ Ray test_ray = Ray(Vec3(-1.0,0.,0.),Vec3(1.,-0.0,0.));
 
 void setup_scene() {
   scene.set_ambient_color(ambient_color);
-  //scene.add_light(inputLightPosition,light_color);
+  scene.add_light(inputLightPosition,light_color);
   Material default_material = Material();
   default_material.set_type(DIFFUSE_SPECULAR);
   default_material.set_diffuse_color(diffuse_color);
@@ -126,12 +126,12 @@ void setup_scene() {
   scene.set_default_material(default_material);
 
   //scene.addMesh ("models/monkey.off");
-  //scene.addSphere(1.0,Vec3(3.,0.,0.));
+  scene.addSphere(1.0,Vec3(0.,0.,0.));
   //scene.addSphere(0.5,Vec3(-1.1,0.,1.));
   //scene.addSphere_with_texture(10.0,Vec3(0.,0.,0.),sphere_texture_bind_index);
   //scene.addSphere_with_mirror(0.9, Vec3(0.,0.,0.) );
-  scene.addCube(2,Vec3(-3.,0.,0.));
-  scene.addSphere_with_transparecy(1.0,Vec3(0.0,0.05,0.0));
+  //scene.addCube(2,Vec3(-3.,0.,0.));
+  //scene.addSphere_with_transparecy(1.0,Vec3(0.0,0.05,0.0));
   //scene.addSphere(0.7,Vec3(0.0,0.0,-1.1));
   //scene.addSphere_with_transparecy(0.95,Vec3(0.0,0.0,0.0));
   //scene.addQuad(Vec3(-10,-1,-10),Vec3(10,-1,-10),Vec3(-10,-1,10),Vec3(10,-1.0,10));
