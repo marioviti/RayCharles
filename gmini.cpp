@@ -62,7 +62,7 @@ static bool fullScreen = false;
 // Render Parametes.
 // -------------------------------------------
 
-int SPP = 32; // SamplePerPixel
+int SPP = 4; // SamplePerPixel
 float DoF = 2.5f; // depth of field
 float aperture = 0.1;
 int set_dof = 0;
@@ -72,7 +72,7 @@ int set_dof = 0;
 // -------------------------------------------
 
 Scene scene;
-Vec3 inputLightPosition = Vec3(1.0,1.0,1.5);
+Vec3 inputLightPosition = Vec3(1.0,2.0,1.5);
 Vec3 light_color = Vec3(1.0,1.0,1.0);
 Vec3 ambient_color = Vec3(0.7,0.8,0.9);
 
@@ -100,7 +100,7 @@ char *fragment_shader_path = "./src/specular_shader.frag";
 
 int sphere_texture_bind_index;
 int plane_texture_bind_index;
-std::string sphere_texture_filename = "./src/img/scenarioTextures/scene1.ppm";
+std::string sphere_texture_filename = "./src/img/sphereTextures/s1.ppm"; //"./src/img/scenarioTextures/scene1.ppm";
 std::string plane_texture_filename = "./src/img/planeTextures/grid.ppm";
 
 // -------------------------------------------
@@ -115,9 +115,13 @@ GLuint colorTexture_binding_Index;
 std::vector<Vec3> rays_intersection;
 Ray test_ray = Ray(Vec3(-1.0,0.,0.),Vec3(1.,-0.0,0.));
 
+// -------------------------------------------
+// setup_scene method calls for scene method to
+// initialize objects on the scene and add lights
+// -------------------------------------------
+
 void setup_scene() {
   scene.set_ambient_color(ambient_color);
-  scene.add_light(inputLightPosition,light_color);
   Material default_material = Material();
   default_material.set_type(DIFFUSE_SPECULAR);
   default_material.set_diffuse_color(diffuse_color);
@@ -125,20 +129,22 @@ void setup_scene() {
   default_material.set_shininess(specular_intensity);
   scene.set_default_material(default_material);
 
+  scene.add_light(inputLightPosition,light_color);
   //scene.addMesh ("models/monkey.off");
-  scene.addSphere(1.0,Vec3(0.,0.,0.));
-  //scene.addSphere(0.5,Vec3(-1.1,0.,1.));
+  //scene.addSphere(1.0,Vec3(0.,0.,0.));
+  //scene.addSphere(0.5,Vec3(-1.0,-0.5,1.));
   //scene.addScenario(sphere_texture_bind_index);
-  //scene.addSphere_with_texture(1.,Vec3(0,0,0),sphere_texture_bind_index);
+  scene.addSphere_with_texture(1.,Vec3(0,0,0),sphere_texture_bind_index);
   //scene.addSphere_with_mirror(1.0, Vec3(0.,0.,0.) );
   //scene.addCube(2,Vec3(-3.,0.,0.));
   //scene.addSphere_with_transparecy(1.0,Vec3(0.0,0.05,0.0));
-  //scene.addSphere(0.7,Vec3(0.0,0.0,-1.1));
+  //scene.addSphere(0.8,Vec3(-1.3,-0.2,-0.2));
   //scene.addSphere_with_transparecy(1.0,Vec3(0.0,0.0,0.0));
   //scene.addQuad(Vec3(-10,-1,-10),Vec3(10,-1,-10),Vec3(-10,-1,10),Vec3(10,-1.0,10));
   // lb rb lt rt
   scene.addPlane_with_Texture(Vec3(-10,-1,-10),Vec3(10,-1,-10),Vec3(-10,-1,10),Vec3(10,-1.0,10),
   Vec2(0.0,0.0),Vec2(1.0,0.0),Vec2(0.0,1.0),Vec2(1.0,1.0),plane_texture_bind_index);
+
   //scene.addPlane_with_Texture(Vec3(5,-5,-1),Vec3(-5,-5,-1),Vec3(5,5,-1),Vec3(-5,5,-1),
   //Vec2(0.0,0.0),Vec2(1.0,0.0),Vec2(0.0,1.0),Vec2(1.0,1.0),plane_texture_bind_index);
 }

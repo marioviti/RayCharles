@@ -17,11 +17,35 @@ public:
       return Ray(origin,refl_dir);
     }
 
-    static Ray refracted_ray (Vec3 const & p, Vec3 const & d, Vec3 const & n, float ior){
-      float cos1 = - Vec3::dot(d,n);
-      Vec3 refracted_dir = ior*d + ((ior*cos1) - sqrt(1-ior*ior*(1-cos1*cos1)))*n;
-      Ray refracted_ray = Ray(p,refracted_dir);
-      refracted_ray.refracted = true;
+    static Ray refracted_ray (Vec3 const & p, Vec3 & i, Vec3 const & n, float ior){
+      float n1,n2,n_ior,cos_theta_t,sin_theta_t_sq;
+      float cos_theta_i = Vec3::dot(i,n);
+      i.normalize();
+      Vec3 normal = n;
+      if(cos_theta_i>0.0) {
+        n1 = ior;
+        n2 = 1.0;
+        normal = -1*normal;
+      }
+      else {
+        n1 = 1.0;
+        n2 = ior;
+        cos_theta_i = -cos_theta_i;
+      }
+      n_ior = n1/n2;
+      if (n_ior==1.0) {
+        // no refraction
+        Ray refracted_ray = Ray(p,i);
+        return refracted_ray;
+      }
+      sin_theta_t_sq = n_ior*n_ior*(1.0-(cos_theta_i*cos_theta_i));
+      if (1-sin_theta_t_sq<0.0) {
+        // total internal refraction
+        return reflected_ray(p,i,normal);
+      }
+      cos_theta_t = sqrt(1-sin_theta_t_sq);
+      Vec3 trasmission = (n_ior * i) + ((n_ior*cos_theta_i - cos_theta_t) * normal);
+      Ray refracted_ray = Ray(p,trasmission);
       return refracted_ray;
     }
 

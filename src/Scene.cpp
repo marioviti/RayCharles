@@ -144,11 +144,10 @@ Vec3 Scene::rayTraceRecursive(Ray const & origin_ray, int depth) {
       float normal_sign = 1;
       float alpha = result.material.get_alpha_mix();
       if (Vec3::dot(ray.direction(),n)>0.f) {
-        ior = 1/float(ior);
         normal_sign = -1;
       }
       Ray refracted_ray = Ray::refracted_ray(p,ray.direction(),normal_sign*n,ior);
-      Ray refl_ray = Ray::reflected_ray(ray.direction(),normal_sign*n,p);
+      Ray refl_ray = Ray::reflected_ray(ray.direction(),n,p);
       if (alpha <1)
         color_value= Vec3::componentProduct( GLASS_COLOR , alpha * rayTraceRecursive( refracted_ray, depth-1) + (1 - alpha) * rayTraceRecursive( refl_ray, depth-1) );
       else
@@ -269,7 +268,7 @@ void Scene::addPlane_with_Texture(Vec3 c1, Vec3 c2, Vec3 c3, Vec3 c4, Vec2 uvc1,
   quad.set_texture_index(bind_index_texture);
   quad.bindindex = bind_index_texture;
   quad.setQuads_with_text(c1,c2,c3,c4,uvc1,uvc2,uvc3,uvc4);
-  quad.recomputeNormals ();
+  quad.recomputeNormals();
   quad.buildArray();
   quads.push_back(quad);
 }
@@ -284,7 +283,7 @@ void Scene::addSphere_with_mirror(float _ray, Vec3 _center ) {
 void Scene::addSphere_with_transparecy(float _ray, Vec3 _center ) {
   Sphere sphere = Sphere(_ray,_center);
   sphere.buildMesh(15,15);
-  sphere.material.set_tranparent(0.95,0.75);
+  sphere.material.set_tranparent(1.1,1.0);
   spheres.push_back(sphere);
 }
 
